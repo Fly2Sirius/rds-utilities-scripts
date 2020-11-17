@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+import datetime
+import pytz
+import sys
+local_time = pytz.timezone("America/Denver")
+
+try:
+    time=sys.argv[1]
+except IndexError:
+        now = datetime.datetime.now()
+        time=now.strftime("%Y-%m-%d %H:%M:%S")
+
+naive_datetime = datetime.datetime.strptime (str(time), "%Y-%m-%d %H:%M:%S")
+
+
+local_datetime = local_time.localize(naive_datetime, is_dst=None)
+
+utc_datetime = local_datetime.astimezone(pytz.utc)
+
+print(utc_datetime)
+
