@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+import sys
+import string
+import random
+import mysql.connector
+from mysql.connector import Error
+from configparser import ConfigParser
+from pathlib import Path
+import os
+
+
+def get_mysql_credentials():
+    home_dir = Path.home()
+    conf = '.my.cnf'
+    conf = os.path.join(home_dir,conf)
+    config = ConfigParser()
+    config.read(conf)
+    mysql_user = config.get('client', 'user')
+    mysql_password = config.get('client', 'password')
+    return mysql_user,mysql_password
+
+def create_connection(host_name, user_name, user_password):
+    connection = None
+    try:
+        connection = mysql.connector.connect(
+            host=host_name,
+            user=user_name,
+            passwd=user_password
+        )
+        print("Connection to MySQL DB successful")
+    except Error as e:
+        print(f"The error '{e}' occurred")
+        sys.exit()
+
+    return connection
+
+mysql_host = 'production.civpyhkigzas.us-east-1.rds.amazonaws.com'
+mysql_user,mysql_password = get_mysql_credentials()
+fetch_user_query = "select distinct(user) from mysql.user order by user" 
+#where user not in ('greedo','yoda','c3po','domo','gcp','jarjar','mysql.sys','rdsadmin','root')"
+connection = create_connection(mysql_host, mysql_user, mysql_password)
+cursor = connection.cursor()
+cursor.execute(fetch_user_query)
+# get all records
+records = cursor.fetchall()
+print("Total number of users: ", cursor.rowcount)
+file1 = open(".validUsers.txt", "r")
+readfile = file1.read()
+for row in records:
+    if row[0] not in readfile: 
+        #print('User', row[0], ' not in validUsers file')
+        print(row[0])
+    
+    
