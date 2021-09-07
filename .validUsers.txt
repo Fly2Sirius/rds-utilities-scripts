@@ -45,10 +45,10 @@ franchise
 gcp
 gmcclintock
 greedo
+health_checks
 iguajardo
 jakecorum
 jamescarlson
-jaredanderton
 jarjar
 jefferyjones
 jeremiahmatthews
@@ -64,14 +64,11 @@ jstoutenburg
 jsung
 jtippetts
 jwilson
-kaiwhitaker
 kdavey
 kellis
 kevinj
 kwootton
 kylev
-ldewey
-legrandw
 lender_data
 lendio_lake
 mattstyles
@@ -118,9 +115,6 @@ tdelange
 tenant_migr
 tenant_read
 tenant_write
-test_bi
-test_read
-testy
 tgreenwood
 theyman
 trayio
