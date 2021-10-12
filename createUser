@@ -7,37 +7,13 @@ from mysql.connector import Error
 from configparser import ConfigParser
 from pathlib import Path
 import os
+import funcs as f
 
 if len(sys.argv) > 1:
     username = sys.argv[1]
 else:
     print('You must supply a username: createUser username')
     sys.exit()
-
-def get_mysql_credentials():
-    home_dir = Path.home()
-    conf = '.my.cnf'
-    conf = os.path.join(home_dir,conf)
-    config = ConfigParser()
-    config.read(conf)
-    mysql_user = config.get('client', 'user')
-    mysql_password = config.get('client', 'password')
-    return mysql_user,mysql_password
-
-def create_connection(host_name, user_name, user_password):
-    connection = None
-    try:
-        connection = mysql.connector.connect(
-            host=host_name,
-            user=user_name,
-            passwd=user_password
-        )
-        print("Connection to MySQL DB successful")
-    except Error as e:
-        print(f"The error '{e}' occurred")
-        sys.exit()
-
-    return connection
 
 def run_command(connection, command):
     cursor = connection.cursor()
@@ -47,14 +23,10 @@ def run_command(connection, command):
     except Error as e:
         print(f"The error '{e}' occurred")
 
-
-
 mysql_host = 'production.civpyhkigzas.us-east-1.rds.amazonaws.com'
 new_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 15))
-mysql_user,mysql_password = get_mysql_credentials()
-connection = create_connection(mysql_host, mysql_user, mysql_password)
-
-
+mysql_user,mysql_password = f.get_mysql_credentials()
+connection = f.create_connection(mysql_host, mysql_user, mysql_password)
 
 try:
         # using "with statement" with open() function
