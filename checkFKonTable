@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+import sys
+import string
+import random
+import requests
+import json
+import funcs as f
+
+
+
+if len(sys.argv) > 1:
+    table_name = sys.argv[1]
+    #if sys.argv[2] is not None: 
+        #schema_name = sys.argv[2]
+    try:
+        schema_name = sys.argv[2]      
+    except IndexError:
+        print("No Schema specified, deafualting to optimus!")
+        schema_name = 'optimus'
+    
+else:
+    print('You must supply at least a table name: checkFKonTable table_name [schema_name]')
+    sys.exit()
+
+
+
+
+mysql_host = 'production.civpyhkigzas.us-east-1.rds.amazonaws.com'
+mysql_user,mysql_password = f.get_mysql_credentials()
+fetch_constraint_names = f"SELECT \
+	    CONSTRAINT_NAME  `Constraint_Name` \
+        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
+        WHERE table_schema = '{schema_name}' \
+	    AND table_name = '{table_name}' \
+	    AND referenced_column_name IS NOT NULL;"
+
+connection = f.create_connection(mysql_host, mysql_user, mysql_password)
+cursor = connection.cursor()
+cursor.execute(fetch_constraint_names)
+# get all records
+names = cursor.fetchall()
+print(f"Total number of child constraints in {schema_name}.{table_name}: {cursor.rowcount}")
+
+for name in names:
+    get_fk_info = f"SELECT \
+	CONSTRAINT_NAME `Constraint_Name`, \
+	table_schema `Source_Schema`, \
+	table_name `Source_Table`, \
+	column_name `Source_Column`, \
+	referenced_table_schema `Referenced_Schema`, \
+	referenced_table_name `Referenced_Table`, \
+	referenced_column_name `Referenced_Column` \
+    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
+    WHERE \
+	table_schema = '{schema_name}' \
+    AND table_name = '{table_name}' \
+    AND constraint_name = '{name[0]}' \
+	AND referenced_column_name IS NOT NULL;"
+    #print(get_fk_info)
+    cursor.execute(get_fk_info)
+    fks = cursor.fetchall()
+    for foreign_keys in fks:
+        print(foreign_keys)
