@@ -3,6 +3,8 @@ import os
 from configparser import ConfigParser
 import mysql.connector
 from mysql.connector import Error
+import colorama
+from colorama import Fore
 
 
 def get_mysql_credentials():
@@ -46,3 +48,73 @@ def send_slack_notification(users):
     }       
     #x = s.post(url, data=json.dumps(data))
     print(json.dumps(data))
+
+
+def show_table_information(connection,schema_name,table_name):
+    cursor = connection.cursor()
+    get_table_info = f"SELECT \
+            TABLE_SCHEMA as `Schema`,TABLE_NAME AS `Table`, \
+            cast(ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024 ) as UNSIGNED) AS `Total_Size_MB`, \
+            cast(ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024 / 1024 ) as UNSIGNED) AS `Total_Size_GB`, \
+            cast(SUM(ROUND((DATA_LENGTH) / 1024 / 1024) ) as UNSIGNED) AS `Data_Length_MB`, \
+            cast(SUM(ROUND((INDEX_LENGTH)  / 1024 / 1024) )as UNSIGNED) AS `Index_Length_MB`, \
+            cast(ROUND(((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024)  *.00252,2) as CHAR) as `Estimated_Migration_Run_Time_Minutes`, \
+            cast(format(DATA_LENGTH/AVG_ROW_LENGTH,0) as char) as Estimated_Rows \
+            FROM information_schema.TABLES \
+            where table_schema = '{schema_name}' \
+            AND table_name ='{table_name}' \
+            ORDER BY \
+            (DATA_LENGTH + INDEX_LENGTH) \
+            DESC;"
+
+    cursor.execute(get_table_info)
+    columns = cursor.description 
+    table_size_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
+    for value in table_size_data:
+        print(Fore.CYAN + f"\n    Schema : {value['Schema']}")
+        print(f"    Table : {value['Table']}")
+        print(f"    Total Size (MB) : {value['Total_Size_MB']}")
+        print(f"    Total Size (GB) : {value['Total_Size_GB']}")
+        print(f"    Data Length (MB) : {value['Data_Length_MB']}")
+        print(f"    Index Length (MB) : {value['Index_Length_MB']}")
+        print(f"    Estimated Migration Run Time (Min) : {value['Estimated_Migration_Run_Time_Minutes']}")
+        print(f"    Estimated Rows : {value['Estimated_Rows']}\n" + Fore.RESET)
+
+
+def get_fk_information(connection,schema_name,table_name):
+    cursor = connection.cursor()
+    get_fk_info = f"(SELECT \
+    constraint_schema `Constraint_Schema`, \
+    constraint_name `Constraint_Name`, \
+    table_schema `Source_Schema`, \
+    table_name `Source_Table`, \
+    column_name `Source_Column`, \
+    referenced_table_schema `Referenced_Schema`, \
+    referenced_table_name `Referenced_Table`, \
+    referenced_column_name `Referenced_Column` \
+    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
+    WHERE \
+    table_schema = '{schema_name}' \
+    AND table_name = '{table_name}' \
+    AND referenced_column_name IS NOT NULL) \
+    UNION \
+    (SELECT \
+        constraint_schema `Constraint_Schema`, \
+        constraint_name `Constraint_Name`, \
+        table_schema `Source_Schema`, \
+        table_name `Source_Table`, \
+        column_name `Source_Column`, \
+        referenced_table_schema `Referenced_Schema`, \
+        referenced_table_name `Referenced_Table`, \
+        referenced_column_name `Referenced_Column` \
+    FROM \
+        INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
+    WHERE \
+        referenced_table_schema = '{schema_name}' \
+        AND referenced_table_name = '{table_name}' \
+        AND table_name != 'counties');"
+
+    cursor.execute(get_fk_info)
+    columns = cursor.description 
+    foreign_key_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
+    return foreign_key_data

@@ -5,6 +5,8 @@ import random
 import requests
 import json
 import funcs as f
+import mysql.connector
+from mysql.connector import Error
 import colorama
 from colorama import Fore
 local_test=None
@@ -16,13 +18,11 @@ if len(sys.argv) > 1:
     try:
         schema_name = sys.argv[2]      
     except IndexError:
-        print(Fore.CYAN + "No Schema specified, deafaulting to optimus!" + Fore.RESET)
-        schema_name = 'optimus'
-    
+        print(Fore.CYAN + "No Schema specified, defaulting to optimus!" + Fore.RESET)
+        schema_name = 'optimus'    
 else:
     print('You must supply at least a table name: checkFKonTable table_name [schema_name]')
     sys.exit()
-
 
 #local_test=True
 
@@ -41,85 +41,30 @@ mysql_database='datateam'
 connection = f.create_connection(mysql_host, mysql_user, mysql_password,mysql_port,mysql_database)
 cursor = connection.cursor()
 
-get_table_info = f"SELECT \
-		  TABLE_SCHEMA as `Schema`,TABLE_NAME AS `Table`, \
-		  cast(ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024 ) as UNSIGNED) AS `Total_Size_MB`, \
-		  cast(ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024 / 1024 ) as UNSIGNED) AS `Total_Size_GB`, \
-		  cast(SUM(ROUND((DATA_LENGTH) / 1024 / 1024) ) as UNSIGNED) AS `Data_Length_MB`, \
-  		  cast(SUM(ROUND((INDEX_LENGTH)  / 1024 / 1024) )as UNSIGNED) AS `Index_Length_MB`, \
-		  cast(ROUND(((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024)  *.00252,2) as CHAR) as `Estimated_Migration_Run_Time_Minutes`, \
-          cast(format(DATA_LENGTH/AVG_ROW_LENGTH,0) as char) as Estimated_Rows \
-		FROM information_schema.TABLES \
-		  where table_schema = '{schema_name}' \
-          AND table_name ='{table_name}' \
-		ORDER BY \
-		  (DATA_LENGTH + INDEX_LENGTH) \
-		DESC;"
+f.show_table_information(connection,schema_name,table_name)
 
-cursor.execute(get_table_info)
-columns = cursor.description 
-#count = cursor.fetchall()
-#print(count)
-table_size_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
-for value in table_size_data:
-    print(Fore.CYAN + f"\n    Schema : {value['Schema']}")
-    print(f"    Table : {value['Table']}")
-    print(f"    Total Size (MB) : {value['Total_Size_MB']}")
-    print(f"    Total Size (GB) : {value['Total_Size_GB']}")
-    print(f"    Data Length (MB) : {value['Data_Length_MB']}")
-    print(f"    Index Length (MB) : {value['Index_Length_MB']}")
-    print(f"    Estimated Migration Run Time (Min) : {value['Estimated_Migration_Run_Time_Minutes']}")
-    print(f"    Estimated Rows : {value['Estimated_Rows']}\n" + Fore.RESET)
-get_fk_info = f"(SELECT \
-constraint_schema `Constraint_Schema`, \
-constraint_name `Constraint_Name`, \
-table_schema `Source_Schema`, \
-table_name `Source_Table`, \
-column_name `Source_Column`, \
-referenced_table_schema `Referenced_Schema`, \
-referenced_table_name `Referenced_Table`, \
-referenced_column_name `Referenced_Column` \
-FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
-WHERE \
-table_schema = '{schema_name}' \
-AND table_name = '{table_name}' \
-AND referenced_table_name != 'counties' \
-AND referenced_column_name IS NOT NULL) \
-UNION \
-(SELECT \
-    constraint_schema `Constraint_Schema`, \
-    constraint_name `Constraint_Name`, \
-	table_schema `Source_Schema`, \
-	table_name `Source_Table`, \
-	column_name `Source_Column`, \
-	referenced_table_schema `Referenced_Schema`, \
-	referenced_table_name `Referenced_Table`, \
-	referenced_column_name `Referenced_Column` \
-FROM \
-	INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
-WHERE \
-	referenced_table_schema = '{schema_name}' \
-	AND referenced_table_name = '{table_name}' \
-    AND table_name != 'counties');"
+foreign_key_data = f.get_fk_information(connection,schema_name,table_name)
 
-cursor.execute(get_fk_info)
-columns = cursor.description 
-foreign_key_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
-print(Fore.YELLOW + f"Total number of constraints in {schema_name}.{table_name}: {cursor.rowcount}" + Fore.RESET )
-#print(foreign_key_data)
+print(Fore.YELLOW + f"Total number of constraints in {schema_name}.{table_name}: {len(foreign_key_data)}" + Fore.RESET )
+
 for value in foreign_key_data:
     get_orphaned_count = f"select count(1) as orphaned_values,group_concat(DISTINCT a.{value['Source_Column']} ORDER BY a.{value['Source_Column']} ) from {value['Source_Schema']}.{value['Source_Table']} a \
 		left join {value['Referenced_Schema']}.{value['Referenced_Table']} b on a.{value['Source_Column']} = b.{value['Referenced_Column']} \
 		where a.{value['Source_Column']} is NOT NULL \
 		and b.{value['Referenced_Column']} is NULL;"
-    #print(get_orphaned_count)
-    cursor.execute(get_orphaned_count)
-    count = cursor.fetchall()
+    try:
+        cursor.execute(get_orphaned_count)
+        count = cursor.fetchall()
+    except mysql.connector.ProgrammingError as err:
+        print(Fore.RED + f"An error occured checking for FK orphans -> {err.msg}" + Fore.RESET )
+        continue
+    except mysql.connector.Error as err:
+        print(err)
     print(f"{value['Constraint_Schema']}.{value['Constraint_Name']} : ", end="")
     if count[0][0] > 0:
         print(Fore.RED + f"{count[0][0]}")
-        print(f"{value['Source_Schema']}.{value['Source_Table']}.{value['Source_Column']}  doesn't exist in -> {value['Referenced_Schema']}.{value['Referenced_Table']}.{value['Referenced_Column']} ")
-        print(f"** {value['Referenced_Column']}(s) that do not exist in {value['Referenced_Schema']}.{value['Referenced_Table']} : ({count[0][1]})")
+        print(f"{value['Source_Schema']}.{value['Source_Table']}.{value['Source_Column']}(s) that don't exist in {value['Referenced_Schema']}.{value['Referenced_Table']}.{value['Referenced_Column']} :")
+        print(f"** ({count[0][1]})")
         print(Fore.RESET, end="")
     else :
         print(Fore.GREEN + "Good")
