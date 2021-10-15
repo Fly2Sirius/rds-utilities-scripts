@@ -25,7 +25,7 @@ def create_connection(host_name, user_name, user_password,port=3306):
             port=port,
             database='datateam'
         )
-        print("Connection to MySQL DB successful")
+        print(f"Connection to {host_name} successful")
     except Error as e:
         print(f"The error '{e}' occurred")
         sys.exit()

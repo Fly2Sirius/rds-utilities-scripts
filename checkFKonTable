@@ -15,7 +15,7 @@ if len(sys.argv) > 1:
     try:
         schema_name = sys.argv[2]      
     except IndexError:
-        print("No Schema specified, deafualting to optimus!")
+        print(Fore.CYAN + "No Schema specified, deafaulting to optimus!" + Fore.RESET)
         schema_name = 'optimus'
     
 else:
@@ -66,7 +66,7 @@ WHERE \
 cursor.execute(get_fk_info)
 columns = cursor.description 
 foreign_key_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
-print(f"Total number of constraints in {schema_name}.{table_name}: {cursor.rowcount}")
+print(Fore.YELLOW + f"Total number of constraints in {schema_name}.{table_name}: {cursor.rowcount}" + Fore.RESET )
 #print(foreign_key_data)
 for value in foreign_key_data:
     get_orphaned_count = f"select count(1) as orphaned_values,group_concat(DISTINCT a.{value['Source_Column']} ORDER BY a.{value['Source_Column']} ) from {value['Source_Schema']}.{value['Source_Table']} a \
@@ -80,7 +80,7 @@ for value in foreign_key_data:
     if count[0][0] > 0:
         print(Fore.RED + f"{count[0][0]}")
         print(f"{value['Source_Schema']}.{value['Source_Table']}.{value['Source_Column']}  doesn't exist in -> {value['Referenced_Schema']}.{value['Referenced_Table']}.{value['Referenced_Column']} ")
-        print(f"** {value['Referenced_Schema']}.{value['Referenced_Table']}.{value['Referenced_Column']} that are missing :  {count[0][1]}")
+        print(f"** {value['Referenced_Column']} that do not exist in {value['Referenced_Schema']}.{value['Referenced_Table']} : ({count[0][1]})")
         print(Fore.RESET, end="")
     else :
         print(Fore.GREEN + "Good")
