@@ -7,6 +7,7 @@ import json
 import funcs as f
 import colorama
 from colorama import Fore
+local_test=None
 
 if len(sys.argv) > 1:
     table_name = sys.argv[1]
@@ -22,15 +23,53 @@ else:
     print('You must supply at least a table name: checkFKonTable table_name [schema_name]')
     sys.exit()
 
-#mysql_host = 'production.civpyhkigzas.us-east-1.rds.amazonaws.com'
-#mysql_host = 'reader-bi.civpyhkigzas.us-east-1.rds.amazonaws.com'
-mysql_user,mysql_password = f.get_mysql_credentials()
-mysql_host = '127.0.0.1'
-mysql_user='lendio'
-mysql_password='L3nd10'
-connection = f.create_connection(mysql_host, mysql_user, mysql_password,9900)
+
+#local_test=True
+
+if local_test:
+    mysql_host = '127.0.0.1'
+    mysql_user='lendio'
+    mysql_password='L3nd10'
+    mysql_port=9900
+else:
+    mysql_host = 'reader-bi.civpyhkigzas.us-east-1.rds.amazonaws.com'
+    #mysql_host = 'production.civpyhkigzas.us-east-1.rds.amazonaws.com'
+    mysql_port=3306
+    mysql_user,mysql_password = f.get_mysql_credentials()
+
+mysql_database='datateam'
+connection = f.create_connection(mysql_host, mysql_user, mysql_password,mysql_port,mysql_database)
 cursor = connection.cursor()
 
+get_table_info = f"SELECT \
+		  TABLE_SCHEMA as `Schema`,TABLE_NAME AS `Table`, \
+		  cast(ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024 ) as UNSIGNED) AS `Total_Size_MB`, \
+		  cast(ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024 / 1024 ) as UNSIGNED) AS `Total_Size_GB`, \
+		  cast(SUM(ROUND((DATA_LENGTH) / 1024 / 1024) ) as UNSIGNED) AS `Data_Length_MB`, \
+  		  cast(SUM(ROUND((INDEX_LENGTH)  / 1024 / 1024) )as UNSIGNED) AS `Index_Length_MB`, \
+		  cast(ROUND(((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024)  *.00252,2) as CHAR) as `Estimated_Migration_Run_Time_Minutes`, \
+          cast(format(DATA_LENGTH/AVG_ROW_LENGTH,0) as char) as Estimated_Rows \
+		FROM information_schema.TABLES \
+		  where table_schema = '{schema_name}' \
+          AND table_name ='{table_name}' \
+		ORDER BY \
+		  (DATA_LENGTH + INDEX_LENGTH) \
+		DESC;"
+
+cursor.execute(get_table_info)
+columns = cursor.description 
+#count = cursor.fetchall()
+#print(count)
+table_size_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
+for value in table_size_data:
+    print(Fore.CYAN + f"\n    Schema : {value['Schema']}")
+    print(f"    Table : {value['Table']}")
+    print(f"    Total Size (MB) : {value['Total_Size_MB']}")
+    print(f"    Total Size (GB) : {value['Total_Size_GB']}")
+    print(f"    Data Length (MB) : {value['Data_Length_MB']}")
+    print(f"    Index Length (MB) : {value['Index_Length_MB']}")
+    print(f"    Estimated Migration Run Time (Min) : {value['Estimated_Migration_Run_Time_Minutes']}")
+    print(f"    Estimated Rows : {value['Estimated_Rows']}\n" + Fore.RESET)
 get_fk_info = f"(SELECT \
 constraint_schema `Constraint_Schema`, \
 constraint_name `Constraint_Name`, \
@@ -80,7 +119,7 @@ for value in foreign_key_data:
     if count[0][0] > 0:
         print(Fore.RED + f"{count[0][0]}")
         print(f"{value['Source_Schema']}.{value['Source_Table']}.{value['Source_Column']}  doesn't exist in -> {value['Referenced_Schema']}.{value['Referenced_Table']}.{value['Referenced_Column']} ")
-        print(f"** {value['Referenced_Column']} that do not exist in {value['Referenced_Schema']}.{value['Referenced_Table']} : ({count[0][1]})")
+        print(f"** {value['Referenced_Column']}(s) that do not exist in {value['Referenced_Schema']}.{value['Referenced_Table']} : ({count[0][1]})")
         print(Fore.RESET, end="")
     else :
         print(Fore.GREEN + "Good")
