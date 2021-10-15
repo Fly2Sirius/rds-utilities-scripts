@@ -15,13 +15,15 @@ def get_mysql_credentials():
     mysql_password = config.get('client', 'password')
     return mysql_user,mysql_password
 
-def create_connection(host_name, user_name, user_password):
+def create_connection(host_name, user_name, user_password,port=3306):
     connection = None
     try:
         connection = mysql.connector.connect(
             host=host_name,
             user=user_name,
-            passwd=user_password
+            passwd=user_password,
+            port=port,
+            database='datateam'
         )
         print("Connection to MySQL DB successful")
     except Error as e:
