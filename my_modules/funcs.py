@@ -80,7 +80,6 @@ def show_table_information(connection,schema_name,table_name):
         print(f"    Estimated Migration Run Time (Min) : {value['Estimated_Migration_Run_Time_Minutes']}")
         print(f"    Estimated Rows : {value['Estimated_Rows']}\n" + Fore.RESET)
 
-
 def get_fk_information(connection,schema_name,table_name):
     cursor = connection.cursor()
     get_fk_info = f"(SELECT \
