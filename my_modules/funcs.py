@@ -9,15 +9,16 @@ from colorama import Fore
 
 def get_mysql_credentials():
     home_dir = Path.home()
-    conf = '.my.cnf'
-    conf = os.path.join(home_dir,conf)
+    conf = ".my.cnf"
+    conf = os.path.join(home_dir, conf)
     config = ConfigParser()
     config.read(conf)
-    mysql_user = config.get('client', 'user')
-    mysql_password = config.get('client', 'password')
-    return mysql_user,mysql_password
+    mysql_user = config.get("client", "user")
+    mysql_password = config.get("client", "password")
+    return mysql_user, mysql_password
 
-def create_connection(host_name, user_name, user_password,mysql_port,mysql_database):
+
+def create_connection(host_name, user_name, user_password, mysql_port, mysql_database):
     connection = None
     try:
         connection = mysql.connector.connect(
@@ -25,7 +26,7 @@ def create_connection(host_name, user_name, user_password,mysql_port,mysql_datab
             user=user_name,
             passwd=user_password,
             port=mysql_port,
-            database=mysql_database
+            database=mysql_database,
         )
         print(f"Connection to {host_name} successful")
     except Error as e:
@@ -34,23 +35,26 @@ def create_connection(host_name, user_name, user_password,mysql_port,mysql_datab
 
     return connection
 
+
 def send_slack_notification(users):
     s = requests.Session()
-    s.headers.update({"Authorization": "GenieKey 9f746c3e-659b-4fca-aa81-6d0fa8022378", "Content-Type": "application/json"})
-    url="https://api.opsgenie.com/v2/alerts"
+    s.headers.update(
+        {
+            "Authorization": "GenieKey 9f746c3e-659b-4fca-aa81-6d0fa8022378",
+            "Content-Type": "application/json",
+        }
+    )
+    url = "https://api.opsgenie.com/v2/alerts"
     data = {
         "message": "Unknown MySQL Users Found",
-    "description": "Unknown Users : "+str(users),
-    "details": {
-        "team": "apiStatus",
-        "test": "true"
-        }
-    }       
-    #x = s.post(url, data=json.dumps(data))
+        "description": "Unknown Users : " + str(users),
+        "details": {"team": "apiStatus", "test": "true"},
+    }
+    # x = s.post(url, data=json.dumps(data))
     print(json.dumps(data))
 
 
-def show_table_information(connection,schema_name,table_name):
+def show_table_information(connection, schema_name, table_name):
     cursor = connection.cursor()
     get_table_info = f"SELECT \
             TABLE_SCHEMA as `Schema`,TABLE_NAME AS `Table`, \
@@ -68,8 +72,11 @@ def show_table_information(connection,schema_name,table_name):
             DESC;"
 
     cursor.execute(get_table_info)
-    columns = cursor.description 
-    table_size_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
+    columns = cursor.description
+    table_size_data = [
+        {columns[index][0]: column for index, column in enumerate(value)}
+        for value in cursor.fetchall()
+    ]
     for value in table_size_data:
         print(Fore.CYAN + f"\n    Schema : {value['Schema']}")
         print(f"    Table : {value['Table']}")
@@ -77,10 +84,13 @@ def show_table_information(connection,schema_name,table_name):
         print(f"    Total Size (GB) : {value['Total_Size_GB']}")
         print(f"    Data Length (MB) : {value['Data_Length_MB']}")
         print(f"    Index Length (MB) : {value['Index_Length_MB']}")
-        print(f"    Estimated Migration Run Time (Min) : {value['Estimated_Migration_Run_Time_Minutes']}")
+        print(
+            f"    Estimated Migration Run Time (Min) : {value['Estimated_Migration_Run_Time_Minutes']}"
+        )
         print(f"    Estimated Rows : {value['Estimated_Rows']}\n" + Fore.RESET)
 
-def get_fk_information(connection,schema_name,table_name):
+
+def get_fk_information(connection, schema_name, table_name):
     cursor = connection.cursor()
     get_fk_info = f"(SELECT \
     constraint_schema `Constraint_Schema`, \
@@ -114,6 +124,9 @@ def get_fk_information(connection,schema_name,table_name):
         AND table_name != 'counties');"
 
     cursor.execute(get_fk_info)
-    columns = cursor.description 
-    foreign_key_data = [{columns[index][0]:column for index, column in enumerate(value)} for value in cursor.fetchall()]
+    columns = cursor.description
+    foreign_key_data = [
+        {columns[index][0]: column for index, column in enumerate(value)}
+        for value in cursor.fetchall()
+    ]
     return foreign_key_data
