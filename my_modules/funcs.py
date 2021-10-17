@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import sys
 from configparser import ConfigParser
 import mysql.connector
 from mysql.connector import Error
@@ -130,3 +131,49 @@ def get_fk_information(connection, schema_name, table_name):
         for value in cursor.fetchall()
     ]
     return foreign_key_data
+
+
+def get_fk_information_for_all_tables(connection):
+    cursor = connection.cursor()
+    get_fk_info = f"SELECT \
+    constraint_schema `Constraint_Schema`, \
+    constraint_name `Constraint_Name`, \
+    table_schema `Source_Schema`, \
+    table_name `Source_Table`, \
+    column_name `Source_Column`, \
+    referenced_table_schema `Referenced_Schema`, \
+    referenced_table_name `Referenced_Table`, \
+    referenced_column_name `Referenced_Column` \
+    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
+    WHERE referenced_column_name IS NOT NULL \
+    AND table_schema in ('optimus','logs','wordpress','urls');"
+    cursor.execute(get_fk_info)
+    columns = cursor.description
+    foreign_key_data = [
+        {columns[index][0]: column for index, column in enumerate(value)}
+        for value in cursor.fetchall()
+    ]
+    return foreign_key_data
+
+
+def get_foreign_key_data(connection, value):
+    cursor = connection.cursor()
+    get_orphaned_count = f"select count(1) as orphaned_values,group_concat(DISTINCT a.{value['Source_Column']} ORDER BY a.{value['Source_Column']} ) from {value['Source_Schema']}.{value['Source_Table']} a \
+		left join {value['Referenced_Schema']}.{value['Referenced_Table']} b on a.{value['Source_Column']} = b.{value['Referenced_Column']} \
+		where a.{value['Source_Column']} is NOT NULL \
+		and b.{value['Referenced_Column']} is NULL;"
+    # print(get_orphaned_count)
+    try:
+        cursor.execute(get_orphaned_count)
+        count = cursor.fetchall()
+    except mysql.connector.ProgrammingError as err:
+        print(
+            Fore.RED
+            + f"An error occured checking for FK orphans -> {err.msg}"
+            + Fore.RESET
+        )
+        # pass
+        count = None
+    except mysql.connector.Error as err:
+        print(err)
+    return count

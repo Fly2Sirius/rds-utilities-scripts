@@ -1,33 +1,13 @@
 #!/usr/bin/env python3
-import sys
-import string
-import random
-import requests
-import json
+
 import funcs as f
 import mysql.connector
 from mysql.connector import Error
+import sys
 import colorama
 from colorama import Fore
 
-local_test = None
-
-if len(sys.argv) > 1:
-    table_name = sys.argv[1]
-    # if sys.argv[2] is not None:
-    # schema_name = sys.argv[2]
-    try:
-        schema_name = sys.argv[2]
-    except IndexError:
-        print(Fore.CYAN + "No Schema specified, defaulting to optimus!" + Fore.RESET)
-        schema_name = "optimus"
-else:
-    print(
-        "You must supply at least a table name: checkFKonTable table_name [schema_name]"
-    )
-    sys.exit()
-
-local_test = True
+local_test = False
 
 if local_test:
     mysql_host = "127.0.0.1"
@@ -46,13 +26,11 @@ connection = f.create_connection(
 )
 cursor = connection.cursor()
 
-f.show_table_information(connection, schema_name, table_name)
 
-foreign_key_data = f.get_fk_information(connection, schema_name, table_name)
-
+foreign_key_data = f.get_fk_information_for_all_tables(connection)
 print(
     Fore.YELLOW
-    + f"Total number of constraints in {schema_name}.{table_name}: {len(foreign_key_data)}"
+    + f"Total number of constraints found: {len(foreign_key_data)}"
     + Fore.RESET
 )
 
@@ -69,5 +47,6 @@ for value in foreign_key_data:
         print(f"** ({count[0][1]})")
         print(Fore.RESET, end="")
     else:
-        print(Fore.GREEN + "Good")
-        print(Fore.RESET, end="")
+        # print(Fore.GREEN + "Good")
+        # print(Fore.RESET, end="")
+        pass
