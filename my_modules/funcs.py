@@ -1,4 +1,6 @@
 from pathlib import Path
+import requests
+import json
 import os
 import sys
 from configparser import ConfigParser
