@@ -9,7 +9,7 @@ import funcs as f
 mysql_host = "production.civpyhkigzas.us-east-1.rds.amazonaws.com"
 mysql_user, mysql_password = f.get_mysql_credentials()
 fetch_user_query = "select distinct(user) from mysql.user order by user"
-connection = f.create_connection(mysql_host, mysql_user, mysql_password)
+connection = f.create_connection(mysql_host, mysql_user, mysql_password, 3306, "mysql")
 cursor = connection.cursor()
 
 cursor.execute(fetch_user_query)
