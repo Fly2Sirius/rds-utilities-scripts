@@ -1,0 +1,59 @@
+{
+	"servers": [{
+			"id": "1",
+			"label": "PROD-Master",
+			"address": "salesrabbit-production1.czvv9t7h3hxf.us-east-1.rds.amazonaws.com",
+			"port": "3306",
+			"source": "yes",
+			"target": "no"
+		},
+		{
+			"id": "2",
+			"label": "PROD-Replica",
+			"address": "salesrabbit-production-replica.czvv9t7h3hxf.us-east-1.rds.amazonaws.com",
+			"port": "3306",
+			"source": "yes",
+			"target": "no"
+		},
+		{
+			"id": "3",
+			"label": "STAGE",
+			"address": "salesrabbit-stage.czvv9t7h3hxf.us-east-1.rds.amazonaws.com",
+			"port": "3306",
+			"source": "yes",
+			"target": "yes"
+		},
+		{
+			"id": "4",
+			"label": "BETA",
+			"address": "salesrabbit-beta.czvv9t7h3hxf.us-east-1.rds.amazonaws.com",
+			"port": "3306",
+			"source": "yes",
+			"target": "yes"
+		},
+		{
+			"id": "5",
+			"label": "QA",
+			"address": "salesrabbit-qa.czvv9t7h3hxf.us-east-1.rds.amazonaws.com",
+			"port": "3306",
+			"source": "yes",
+			"target": "yes"
+		},
+		{
+			"id": "6",
+			"label": "DEV",
+			"address": "salesrabbit-dev.czvv9t7h3hxf.us-east-1.rds.amazonaws.com",
+			"port": "3306",
+			"source": "yes",
+			"target": "yes"
+		},
+		{
+			"id": "7",
+			"label": "L2",
+			"address": "L2.czvv9t7h3hxf.us-east-1.rds.amazonaws.com",
+			"port": "3306",
+			"source": "yes",
+			"target": "yes"
+		}
+	]
+}
