@@ -26,7 +26,7 @@ END IF;
 SET loop_id_end = (loop_id_start - 1) + inIncrement;
 select max_temp_id,inStart,total_rows_to_update,loop_id_end,total_loops;
 SET loop_id = 1;
-call `datateam`.`job_log_steps_start`(@_log_id,"The First Step",max_temp_id,inIncrement,inStart,max_temp_id,"Starting First Step",@_log_step_id);
+call `datateam`.`job_log_steps_start`(@_log_id,1,"The First Step",max_temp_id,inIncrement,inStart,max_temp_id,"Starting First Step",@_log_step_id);
 	UPDATE_LOOP:WHILE loop_id <= total_loops DO
 	   	select CURRENT_TIMESTAMP into @start_loop; 
 	   	IF loop_id_end > max_temp_id THEN

@@ -34,7 +34,7 @@ truncate table `optimus`.`_temp_borrowerValue_sourceid`;
 -- Step 1
 
 call `datateam`.`job_log_update`("status","Running Step 1");
-call `datateam`.`job_log_steps_start`(@_log_id,"The First Step",max_bv_id,inIncrement,inStart,max_bv_id,"Starting First Step",@_log_step_id);
+call `datateam`.`job_log_steps_start`(@_log_id,1,"The First Step",max_bv_id,inIncrement,inStart,max_bv_id,"Starting First Step",@_log_step_id);
 
 IF inStart > 1 THEN
 	SET loop_id_start = inStart;
@@ -67,7 +67,7 @@ call `datateam`.`job_log_steps_update`("end",CURRENT_TIMESTAMP);
 -- Step 2
 
 call `datateam`.`job_log_update`("status","Running Step 2");
-call `datateam`.`job_log_steps_start`(@_log_id,"The Second Step",max_bv_id,inIncrement,inStart,max_bv_id,"Starting Second Step",@_log_step_id);
+call `datateam`.`job_log_steps_start`(@_log_id,2,"The Second Step",max_bv_id,inIncrement,inStart,max_bv_id,"Starting Second Step",@_log_step_id);
 
 IF inStart > 1 THEN
 	SET loop_id_start = inStart;
@@ -100,7 +100,7 @@ call `datateam`.`job_log_steps_update`("end",CURRENT_TIMESTAMP);
 -- Step 3
 
 call `datateam`.`job_log_update`("status","Running Step 3");
-call `datateam`.`job_log_steps_start`(@_log_id,"The Third Step",max_bv_id,inIncrement,inStart,max_bv_id,"Starting Third Step",@_log_step_id);
+call `datateam`.`job_log_steps_start`(@_log_id,3,"The Third Step",max_bv_id,inIncrement,inStart,max_bv_id,"Starting Third Step",@_log_step_id);
 
 IF inStart > 1 THEN
 	SET loop_id_start = inStart;
