@@ -21,9 +21,6 @@
 --
 --------------------------------------------------------------------------------------------------- 
 
-
-
-
 CREATE DATABASE IF NOT EXISTS `datateam`;
 
 USE `datateam`;
@@ -33,8 +30,8 @@ CREATE TABLE  IF NOT EXISTS `datateam`.`job_log` (
   `job_name` varchar(50) DEFAULT NULL,
   `step_total` tinyint(4) NOT NULL DEFAULT '1',
   `step_current` tinyint(4) NOT NULL DEFAULT '1',
-  `increment` int(11) DEFAULT NULL,
-  `start_id` int(11) DEFAULT NULL,
+  `increment` int(11) unsigned DEFAULT NULL,
+  `start_id` int(11) unsigned DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -45,13 +42,15 @@ CREATE TABLE  IF NOT EXISTS `datateam`.`job_log` (
 CREATE TABLE IF NOT EXISTS `datateam`.`job_log_steps` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `job_id` int(10) unsigned DEFAULT NULL,
-  `step_number` tinyint(4) NOT NULL DEFAULT '1',
+  `step_number` tinyint(4) NOT NULL DEFAULT 1,
   `step_name` varchar(30) DEFAULT NULL,
   `rows_to_update` int(10) unsigned DEFAULT NULL,
-  `increment` int(10) unsigned NOT NULL DEFAULT '1',
+  `increment` int(10) unsigned NOT NULL DEFAULT 1,
   `loops_total` int(10) unsigned DEFAULT NULL,
   `loops_complete` int(10) unsigned DEFAULT NULL,
   `last_loop_time` int(10) unsigned DEFAULT NULL,
+  `total_rows_to_update` int(10) unsigned DEFAULT NULL,
+  `rows_updated` int(10) unsigned DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -59,16 +58,19 @@ CREATE TABLE IF NOT EXISTS `datateam`.`job_log_steps` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW IF NOT EXISTS `datateam`.`job_log_time_estimates` as
+CREATE OR REPLACE VIEW `datateam`.`job_log_time_estimates` as
 SELECT
 	`l`.`job_name` AS `Job Name`,
 	`s`.`step_name` AS `Step Name`,
 	`s`.`loops_total` AS `Total Loops`,
 	`s`.`loops_complete` AS `Current Loop`,
-	concat(round(((`s`.`loops_complete` / `s`.`loops_total`) * 100), 1), '%') AS `Percent Complete`,
+	concat(round(((`s`.`loops_complete` / `s`.`loops_total`) * 100), 1), '%') AS `Percent Complete (Loops)`,
 	`s`.`increment` AS `increment`,
 	`s`.`start` AS `Step Start`,
 	`s`.`end` AS `Step End`,
+	`s`.`total_rows_to_update` as `Total Number Of Rows To Update`,
+	`s`.`rows_updated` as `Number Of Rows Updated`,
+	concat(round(((`s`.`rows_updated` / `s`.`total_rows_to_update`) * 100), 1), '%') AS `Percent Complete (Rows)`,
 	timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) AS `Run Time (Min)`,
 	round((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / 60), 2) AS `Run Time (hr)`,
 	round(((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)), 0) AS `Est Time Remaining`,

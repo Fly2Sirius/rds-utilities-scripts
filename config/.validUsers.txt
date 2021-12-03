@@ -47,7 +47,6 @@ gmcclintock
 greedo
 health_checks
 iguajardo
-jakecorum
 jamescarlson
 jarjar
 jefferyjones
