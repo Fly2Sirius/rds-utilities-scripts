@@ -50,6 +50,7 @@ INSERT_LOOP_1:WHILE loop_id <= total_loops DO
 	join optimus.lenders l on bv.createdByUserId = l.id
 	set sourceId = 6
     where l.isSystemAccount = 1
+	and bv.sourceId = 1
 	and bv.id between ',loop_id_start,' and ',loop_id_end,';');
 	PREPARE s1 FROM @sql;
 	EXECUTE s1;
@@ -82,7 +83,7 @@ INSERT_LOOP_2:WHILE loop_id <= total_loops DO
 		join optimus.users u on bv.createdByUserId = u.id
 		set sourceId = 5
 		where u.role = "client"
-		and sourceId !=6
+		and sourceId = 1
 		and bv.id between ',loop_id_start,' and ',loop_id_end,';');
 		PREPARE s1 FROM @sql;
 		EXECUTE s1;
@@ -114,7 +115,7 @@ INSERT_LOOP_3:WHILE loop_id <= total_loops DO
         SET @sql = CONCAT('update optimus.borrowerValues bv
 		set sourceId = 2
 		where bv.createdByUserId is NOT NULL
-		and sourceId not in (5,6,2)
+		and sourceId = 1
 		and bv.id between ',loop_id_start,' and ',loop_id_end,';');
         PREPARE s1 FROM @sql;
 		EXECUTE s1;
