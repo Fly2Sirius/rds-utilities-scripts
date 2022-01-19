@@ -106,6 +106,8 @@ INSERT_LOOP_3:WHILE loop_id <= total_loops DO
 END WHILE INSERT_LOOP_3; 
 call `datateam`.`job_log_steps_update`("end",CURRENT_TIMESTAMP);
 
+-- Finish things up
+
 call `datateam`.`job_log_update`("status","Complete");
 call `datateam`.`job_log_update`("end",CURRENT_TIMESTAMP);
         
