@@ -16,7 +16,7 @@ SET job_steps = 4;
 
 -- Query to get the upper value to loop up to
 -- select max(id) into max_bv_id from optimus.borrowerValues;
-call `datateam`.`job_log_start`("stored proc name",job_steps,1,inIncrement,inStart,"Starting Job",@_log_id);
+call `datateam`.`job_log_start`("delete_borrowerValue_duplicates",job_steps,1,inIncrement,inStart,"Starting Job",@_log_id);
 
 SET total_rows_to_update = ((max_bv_id) - inStart);
 SET total_loops = ceiling(total_rows_to_update/inIncrement);
@@ -36,8 +36,8 @@ SET loop_id = 1;
 
 
 select CURRENT_TIMESTAMP into @start_loop;
-SET @sql = CONCAT('insert into _duplicates (borrowerId,attributeId,documentId,sourceId,cnt)
-	select * from (select borrowerId,attributeId,documentId,sourceId,count(*) cnt  from borrowerValues where id > ',inStart,' group by borrowerId,attributeId,documentId,sourceId having count(*) > 1) as dt
+SET @sql = CONCAT('insert into optimus._duplicates (borrowerId,attributeId,documentId,sourceId,cnt)
+	select * from (select borrowerId,attributeId,documentId,sourceId,count(*) cnt  from optimus.borrowerValues where id > ',inStart,' group by borrowerId,attributeId,documentId,sourceId having count(*) > 1) as dt
 	on duplicate key update cnt = dt.cnt;');
 PREPARE s1 FROM @sql;
 EXECUTE s1;
@@ -66,8 +66,8 @@ SET loop_id = 1;
 
 select CURRENT_TIMESTAMP into @start_loop;
 SET @sql = CONCAT('insert ignore into _duplicatesBackUp
-	select bv.* from borrowerValues bv
-	join _duplicates d on bv.borrowerId = d.borrowerId and bv.attributeId = d.attributeId and bv.documentId = d.documentId and bv.sourceId = d.sourceId;');
+	select bv.* from optimus.borrowerValues bv
+	join optimus._duplicates d on bv.borrowerId = d.borrowerId and bv.attributeId = d.attributeId and bv.documentId = d.documentId and bv.sourceId = d.sourceId;');
 PREPARE s1 FROM @sql;
 EXECUTE s1;
 select CONCAT('Loop :',loop_id,' of ',total_loops) as LoopCounter;
@@ -95,9 +95,9 @@ SET loop_id = 1;
 
 
 select CURRENT_TIMESTAMP into @start_loop;
-SET @sql = CONCAT('insert ignore into _duplicatesToDelete
-	select t1.id from _duplicatesBackUp t1
-	INNER JOIN _duplicatesBackUp t2
+SET @sql = CONCAT('insert ignore into optimus._duplicatesToDelete
+	select t1.id from optimus._duplicatesBackUp t1
+	INNER JOIN optimus._duplicatesBackUp t2
 	WHERE t1.borrowerId = t2.borrowerId
 	AND t1.attributeId = t2.attributeId
 	AND t1.documentId = t2.documentId
@@ -130,8 +130,8 @@ SET loop_id = 1;
 
 
 select CURRENT_TIMESTAMP into @start_loop;
-SET @sql = CONCAT('delete bv from borrowerValues bv
-	join _duplicatesToDelete d on bv.id = d.id;');
+SET @sql = CONCAT('delete bv from optimus.borrowerValues bv
+	join optimus._duplicatesToDelete d on bv.id = d.id;');
 PREPARE s1 FROM @sql;
 EXECUTE s1;
 select CONCAT('Loop :',loop_id,' of ',total_loops) as LoopCounter;

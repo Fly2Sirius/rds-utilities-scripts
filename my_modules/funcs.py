@@ -164,7 +164,7 @@ def get_foreign_key_data(connection, value):
 		left join {value['Referenced_Schema']}.{value['Referenced_Table']} b on a.{value['Source_Column']} = b.{value['Referenced_Column']} \
 		where a.{value['Source_Column']} is NOT NULL \
 		and b.{value['Referenced_Column']} is NULL;"
-    print(get_orphaned_count)
+    # print(get_orphaned_count)
     try:
         cursor.execute(get_orphaned_count)
         count = cursor.fetchall()
