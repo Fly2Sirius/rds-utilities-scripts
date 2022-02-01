@@ -115,7 +115,7 @@ proc_Exit:BEGIN
 	DECLARE loops_total int;
 	SET loops_total = ((inMaxId - inStartId)/inIncrement) + 1;
 	SET @insert_sql = CONCAT('insert into `datateam`.`job_log_steps` (id,job_id,step_number,step_name,rows_to_update,increment,loops_total,`status`) VALUES (NULL,',inJobId,',',inStepNumber,',"',inStepName,'",',inRowsToUpdate,',',inIncrement,',',loops_total,',"',inStatus,'");');
-	select @insert_sql;
+	-- select @insert_sql;
 	PREPARE s1 FROM @insert_sql;
 	EXECUTE s1;  
 	SET `_log_step_id` := LAST_INSERT_ID();
