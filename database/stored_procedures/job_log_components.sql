@@ -93,7 +93,7 @@ SET _log_id := LAST_INSERT_ID();
 END;;
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS `datateam`.`job_log_steps_start`;
+DROP PROCEDURE IF EXISTS `datateam`.`job_log_update`;
 
 DELIMITER ;;
 CREATE PROCEDURE `datateam`.`job_log_update`(inColumn varchar(30),inColumnValue varchar(30))
@@ -101,7 +101,7 @@ proc_Exit:BEGIN
 	SET @update_sql = CONCAT('update `datateam`.`job_log` 
 		set ',inColumn,' = "',inColumnValue,'"
 		where id = ',@_log_id,';');
-	select @update_sql;
+	-- select @update_sql;
 	PREPARE s1 FROM @update_sql;
 	EXECUTE s1;  
 END;;
