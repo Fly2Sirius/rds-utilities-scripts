@@ -1,0 +1,48 @@
+#!/bin/bash
+
+cluster=recovery-production-cluster-1
+instance=recovery-production-1
+
+#if [ $# -eq 0 ]
+#  then
+#    timestamp=`utc r`
+#    echo "No timestamp supplied... using $timestamp"
+#  else
+	timestamp=$1
+#fi
+
+echo "Creating Cluster from $timestamp $1"
+
+
+aws rds restore-db-cluster-to-point-in-time \
+   --source-db-cluster-identifier production-cluster-1 \
+   --db-cluster-identifier $cluster \
+   --db-subnet-group-name default-vpc-000860b3f90d273d3 \
+   --vpc-security-group-ids sg-0f5104e69de0fe355 sg-00979e2550e22b0a1  \
+   --restore-to-time $timestamp > /dev/null
+
+echo ""
+while [[ $result != "available" ]]; do
+	echo -e "\r\033[1A\033[0KStill building cluster... $result $i"
+	sleep 60
+	result=`aws rds describe-db-clusters --db-cluster-identifier $cluster --query "DBClusters[*].Status" --output text`
+	let "i=i+1"
+done
+
+aws rds create-db-instance \
+	--db-instance-identifier  $instance \
+	--db-cluster-identifier $cluster \
+	--engine aurora-mysql  \
+	--no-publicly-accessible \
+	--db-instance-class db.r5.large > /dev/null 
+
+echo "Creating Instance ... "
+#echo ""
+while [[ $result1 != "available" ]]; do
+	echo -e "\r\033[1A\033[0KStill building instance... $result $j"
+	sleep 60
+	result1=`aws rds describe-db-instances --db-instance-identifier $instance --query "DBInstances[*].DBInstanceStatus" --output text`
+	let "j=j+1"
+done
+
+printf "%b\n" "\033[96mInstance Created!!!"
