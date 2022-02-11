@@ -48,7 +48,6 @@ etl_user
 fiveTran
 franchise
 gcp
-gmclintock
 gmcclintock
 greedo
 health_checks
