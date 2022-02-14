@@ -1,15 +1,15 @@
 #!/bin/bash
-
+# Creates a new Cluster and Instance from the production Cluster/Writer
 cluster=recovery-production-cluster-1
 instance=recovery-production-1
 
-#if [ $# -eq 0 ]
-#  then
-#    timestamp=`utc r`
-#    echo "No timestamp supplied... using $timestamp"
-#  else
+if [ $# -eq 0 ]
+  then
+    timestamp=`utc r`
+    echo "No timestamp supplied... using $timestamp"
+  else
 	timestamp=$1
-#fi
+fi
 
 echo "Creating Cluster from $timestamp $1"
 

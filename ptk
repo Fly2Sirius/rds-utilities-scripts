@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Starts/Stops Percona Toolkit EC2 Instance
 import boto3
 import sys
 region = 'us-east-1'

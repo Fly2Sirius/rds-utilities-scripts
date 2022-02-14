@@ -27,7 +27,7 @@ else:
     )
     sys.exit()
 
-local_test = True
+local_test = False
 
 if local_test:
     mysql_host = "127.0.0.1"

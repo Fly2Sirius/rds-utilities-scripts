@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Checks Production DB Users against list (./config/.validUsers.txt)
 import sys
 import string
 import random
