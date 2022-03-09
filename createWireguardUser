@@ -1,0 +1,12 @@
+
+username="joshua.neilsen"
+
+mkdir -p ~/repos/wg-keys/devops
+mkdir -p ~/repos/wg-keys/sandbox
+mkdir -p ~/repos/wg-keys/production
+mkdir -p ~/repos/wg-keys/stage
+
+wg genkey | tee ~/dev/wg-keys/devops/$username.key | wg pubkey > ~/dev/wg-keys/devops/$username.pub
+wg genkey | tee ~/dev/wg-keys/sandbox/$username.key | wg pubkey > ~/dev/wg-keys/sandbox/$username.pub
+wg genkey | tee ~/dev/wg-keys/production/$username.key | wg pubkey > ~/dev/wg-keys/production/$username.pub
+wg genkey | tee ~/dev/wg-keys/production-uk/$username.key | wg pubkey > ~/dev/wg-keys/production-uk/$username.pub
