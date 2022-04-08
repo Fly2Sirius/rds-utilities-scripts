@@ -1,7 +1,10 @@
 #!/bin/bash
 # Creates a new Cluster and Instance from the production Cluster/Writer
- cluster=recovery-production-cluster-1
- instance=recovery-production-1
+#cluster=recovery-production-cluster-1
+#instance=recovery-production-1
+
+cluster=circle-recovery-cluster
+instance=circle-recovery-instance
 
 if [ $# -eq 0 ]
   then
@@ -12,6 +15,7 @@ if [ $# -eq 0 ]
 fi
 
 echo "Creating Cluster from $timestamp $1"
+
 
 aws rds restore-db-cluster-to-point-in-time \
    --source-db-cluster-identifier production-cluster-1 \
@@ -25,7 +29,7 @@ while [[ $result != "available" ]]; do
     echo -e "\r\033[1A\033[0KStill building cluster... $result $i"
     sleep 60
     result=`aws rds describe-db-clusters --db-cluster-identifier $cluster --query "DBClusters[*].Status" --output text`
-    let "i=i+1"
+    i=$((i+1))
 done
 
 aws rds create-db-instance \
@@ -38,10 +42,10 @@ aws rds create-db-instance \
 echo "Creating Instance ... "
 #echo ""
 while [[ $result1 != "available" ]]; do
-    echo -e "\r\033[1A\033[0KStill building instance... $result $j"
+    echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
     sleep 60
     result1=`aws rds describe-db-instances --db-instance-identifier $instance --query "DBInstances[*].DBInstanceStatus" --output text`
-    let "j=j+1"
+    j=$((j+1))
 done
 
 printf "%b\n" "\033[96mInstance Created!!!"
