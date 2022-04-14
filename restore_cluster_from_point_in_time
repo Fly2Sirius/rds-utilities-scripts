@@ -1,10 +1,10 @@
 #!/bin/bash
 # Creates a new Cluster and Instance from the production Cluster/Writer
-#cluster=recovery-production-cluster-1
-#instance=recovery-production-1
+cluster=recovery-production-cluster-1
+instance=recovery-production-1
 
-cluster=circle-recovery-cluster
-instance=circle-recovery-instance
+#cluster=circle-recovery-cluster
+#instance=circle-recovery-instance
 
 if [ $# -eq 0 ]
   then
