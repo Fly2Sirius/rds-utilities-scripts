@@ -1,17 +1,13 @@
 #!/usr/bin/bash
-
 for env in staging-homeportal production-homeportal
 do
     cmd=$(aws rds describe-db-clusters --output text \
     --query "DBClusters[?contains(DBClusterIdentifier, '${env}')] | sort_by(@, &ClusterCreateTime)[].[DBClusterIdentifier][] | [0:-3:1]")
-
     instances=$cmd
     for i in $instances
     do
-        #aws rds delete-db-cluster --db-cluster-identifier $i --skip-final-snapshot
+        aws rds delete-db-cluster --db-cluster-identifier $i --skip-final-snapshot
         echo "instance -> $i"
     done
-
-
 done
 
