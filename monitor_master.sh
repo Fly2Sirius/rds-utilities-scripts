@@ -25,7 +25,7 @@ ON r.trx_id = w.requesting_trx_id
 where b.trx_query is NULL
 group by b.trx_mysql_thread_id 
 having count(1) > 3
-order by count(1) desc; select substring_index(host, ':', 1) as IP , count(*) from information_schema.processlist group by substring_index(host, ':', 1);";
-		sleep 2;
+order by count(1) desc; select substring_index(host, ':', 1) as IP , count(*) from information_schema.processlist group by substring_index(host, ':', 1);select * from datateam.parker1\G";
+        sleep 2;
         let count=count+1
 done
