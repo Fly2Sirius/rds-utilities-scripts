@@ -1,7 +1,7 @@
 #!/bin/bash
-server='reader-primary.civpyhkigzas.us-east-1.rds.amazonaws.com'
+#server='reader-primary.civpyhkigzas.us-east-1.rds.amazonaws.com'
 ##server='application-autoscaling-c9cd010c-5273-416d-87b6-99f6d7e62f84.civpyhkigzas.us-east-1.rds.amazonaws.com'
-#server='reader-bi.civpyhkigzas.us-east-1.rds.amazonaws.com'
+server='reader-bi.civpyhkigzas.us-east-1.rds.amazonaws.com'
 port=3306
 limit=30
 count=1

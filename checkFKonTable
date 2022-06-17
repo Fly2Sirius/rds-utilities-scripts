@@ -60,7 +60,7 @@ for value in foreign_key_data:
     count = f.get_foreign_key_data(connection, value)
     if count == None:
         continue
-    print(f"{value['Constraint_Schema']}.{value['Constraint_Name']} : ", end="")
+    print(f"{value['Constraint_Schema']}.{value['Source_Table']}.{value['Source_Column']} - {value['Constraint_Name']} : ", end="")
     if count[0][0] > 0:
         print(Fore.RED + f"{count[0][0]}")
         print(

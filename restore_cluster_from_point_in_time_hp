@@ -1,0 +1,52 @@
+#!/bin/bash
+# Creates a new Cluster and Instance from the production Cluster/Writer
+target=hp-rc-clone-test2
+source=homeportal-rc
+
+#cluster=circle-recovery-cluster
+#instance=circle-recovery-instance
+
+if [ $# -eq 0 ]
+  then
+    timestamp=`date -u -d '1 hour ago' "+%Y-%m-%dT%H:%M:%S"`
+    echo "No timestamp supplied... using $timestamp"
+  else
+    timestamp=$1
+fi
+
+echo "Creating Cluster from $timestamp $1"
+
+
+aws rds restore-db-cluster-to-point-in-time \
+--source-db-cluster-identifier $source \
+--db-cluster-identifier $target \
+--db-subnet-group-name default-vpc-0d4bd66cbd5a11024-1 \
+--vpc-security-group-ids sg-0085f88106776d870 \
+--restore-to-time $timestamp > /dev/null
+
+
+echo ""
+while [[ $result != "available" ]]; do
+    echo -e "\r\033[1A\033[0KStill building cluster... $result $i"
+    sleep 60
+    result=`aws rds describe-db-clusters --db-cluster-identifier $target --query "DBClusters[*].Status" --output text`
+    i=$((i+1))
+done
+
+# aws rds create-db-instance \
+#     --db-instance-identifier  $instance \
+#     --db-cluster-identifier $cluster \
+#     --engine aurora-mysql  \
+#     --no-publicly-accessible \
+#     --db-instance-class db.r5.large > /dev/null 
+
+# echo "Creating Instance ... "
+# #echo ""
+# while [[ $result1 != "available" ]]; do
+#     echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
+#     sleep 60
+#     result1=`aws rds describe-db-instances --db-instance-identifier $instance --query "DBInstances[*].DBInstanceStatus" --output text`
+#     j=$((j+1))
+# done
+
+printf "%b\n" "\033[96mInstance Created!!!"
