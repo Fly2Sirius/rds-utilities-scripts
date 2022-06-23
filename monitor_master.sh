@@ -31,6 +31,7 @@ do
         # group by b.trx_mysql_thread_id 
         # having count(1) > 3
         # order by count(1) desc; select substring_index(host, ':', 1) as IP , count(*) from information_schema.processlist group by substring_index(host, ':', 1);"
+        
         # Show counts of loaded borrower Assignments
         echo -e "\e[1m\e[33m"
         mysql  --protocol=tcp  --host=$server -P $port -e "select bab.bulkAssignmentid,bab.status,count(1) as Reassignmnets from optimus.bulkAssignmentBorrowers bab join optimus.bulkAssignments ba on bab.bulkAssignmentId = ba.id where bab.created > DATE_SUB(NOW(), INTERVAL 2 HOUR) and ba.deleted is NULL group by bab.status,bab.bulkAssignmentid;"

@@ -66,7 +66,7 @@ except:
         print("File is not closed")
     else:
         print("File is closed")
-
-print("User:", + username)
-print("Password : " + new_password)
+print(username)
+print("User: ", username)
+print("Password: ", new_password)
 print("Host : reader-bi.civpyhkigzas.us-east-1.rds.amazonaws.com")

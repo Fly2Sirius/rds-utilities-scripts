@@ -1,6 +1,6 @@
 #!/bin/bash
 # Creates a new Cluster and Instance from the production Cluster/Writer
-target=hp-rc-clone-test2
+target=hp-rc-clone-test
 source=homeportal-rc
 
 #cluster=circle-recovery-cluster
