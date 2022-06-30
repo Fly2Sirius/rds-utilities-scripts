@@ -13,7 +13,8 @@ fi
 while [ $count -le 10000 ]
 do
         echo -e "\e[1m\e[36m"
-        date
+        threads=$(mysql  --protocol=tcp  --host=$server -P $port  -e '\s' | grep Threads | awk -F " " '{print $NF}')
+        echo $(date) " - Threads " $threads
         mysql  --protocol=tcp  --host=$server -P $port -e "select ID,DB,Host,User,Command,Time,left(Info,$left) as Query, right(Info,20) as QueryEnd from information_schema.processlist where Command not in ('Binlog Dump','Sleep','Connect','Daemon') and Time > 0 order by time desc limit $limit; set @count = (select count(*) as count from information_schema.processlist where Command not in ('Sleep','Daemon') and Time > 0); " 
         # Show logged in user information
         #mysql  --protocol=tcp  --host=$server -P $port -e "set @count2 = (select count(*) as count from information_schema.processlist); set @count3 = (select count(*) as count from information_schema.processlist where User = 'greedo'); set @count4 = (select count(*) as count from information_schema.processlist where user = 'yoda'); set @count5 = (select count(*) as count from information_schema.processlist where user = 'tenant_write'); select @count as Running,@count2 as Connected,@count3 as greedo,@count4 as yoda,@count5 as tenant_write; select DB,User, count(*) as Count from information_schema.processlist where  Command not in ('Binlog Dump','Sleep','Daemon') group by DB, User order by count(*) limit 5; "
@@ -36,10 +37,10 @@ do
         echo -e "\e[1m\e[33m"
         mysql  --protocol=tcp  --host=$server -P $port -e "select bab.bulkAssignmentid,bab.status,count(1) as Reassignmnets from optimus.bulkAssignmentBorrowers bab join optimus.bulkAssignments ba on bab.bulkAssignmentId = ba.id where bab.created > DATE_SUB(NOW(), INTERVAL 2 HOUR) and ba.deleted is NULL group by bab.status,bab.bulkAssignmentid;"
         # Show deadlock info
-        echo -e "\e[1m\e[31m"
+        #echo -e "\e[1m\e[31m"
         #mysql  --protocol=tcp  --host=$server -P $port -e "select * from datateam.parker1\G";
         echo -e "\e[1m\e[36m"
-        mysql  --protocol=tcp  --host=$server -P $port  -e '\s' | grep Threads | awk -F " " '{print $NF}'
+       
         sleep 2;
         let count=count+1
 
