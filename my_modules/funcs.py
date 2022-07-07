@@ -58,6 +58,9 @@ def send_slack_notification(users):
 
 
 def show_table_information(connection, schema_name, table_name):
+    '''
+    Shows table summary information.
+    '''
     cursor = connection.cursor()
     get_table_info = f"SELECT \
             TABLE_SCHEMA as `Schema`,TABLE_NAME AS `Table`, \
@@ -124,7 +127,23 @@ def get_fk_information(connection, schema_name, table_name):
     WHERE \
         referenced_table_schema = '{schema_name}' \
         AND referenced_table_name = '{table_name}' \
-        AND table_name != 'counties');"
+        AND table_name != 'counties') \
+    UNION \
+        (SELECT \
+        `Constraint_Schema`, \
+        `Constraint_Name`, \
+        `Source_Schema`, \
+        `Source_Table`, \
+        `Source_Column`, \
+        `Referenced_Schema`, \
+        `Referenced_Table`, \
+        `Referenced_Column` \
+    FROM \
+        datateam.ForeignKeys \
+    WHERE \
+        Referenced_Schema = '{schema_name}' \
+        AND Referenced_Table = '{table_name}' \
+     );"
 
     cursor.execute(get_fk_info)
     columns = cursor.description
@@ -161,9 +180,9 @@ def get_fk_information_for_all_tables(connection):
 def get_foreign_key_data(connection, value):
     cursor = connection.cursor()
     get_orphaned_count = f"select count(1) as orphaned_values,group_concat(DISTINCT a.{value['Source_Column']} ORDER BY a.{value['Source_Column']} ) from {value['Source_Schema']}.{value['Source_Table']} a \
-		left join {value['Referenced_Schema']}.{value['Referenced_Table']} b on a.{value['Source_Column']} = b.{value['Referenced_Column']} \
-		where a.{value['Source_Column']} is NOT NULL \
-		and b.{value['Referenced_Column']} is NULL;"
+        left join {value['Referenced_Schema']}.{value['Referenced_Table']} b on a.{value['Source_Column']} = b.{value['Referenced_Column']} \
+        where a.{value['Source_Column']} is NOT NULL \
+        and b.{value['Referenced_Column']} is NULL;"
     #print(get_orphaned_count)
     try:
         cursor.execute(get_orphaned_count)
