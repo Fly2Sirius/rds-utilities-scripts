@@ -31,7 +31,7 @@ def create_connection(host_name, user_name, user_password, mysql_port, mysql_dat
             port=mysql_port,
             database=mysql_database,
         )
-        print(f"Connection to {host_name} successful")
+        #print(f"Connection to {host_name} successful")
     except Error as e:
         print(f"The error '{e}' occurred")
         sys.exit()
@@ -97,6 +97,14 @@ def show_table_information(connection, schema_name, table_name):
 
 
 def get_fk_information(connection, schema_name, table_name):
+    """
+    Specific to schema and table.
+
+    :param connection: Database Connection Object
+    :param schema_name: The Name of the Schema the table resides in.
+    :param table_name: The Name of the table you wnat to check the FKs on.
+    :return: Returns all the FK data for each constraint based on the schema and table passed in.
+    """ 
     cursor = connection.cursor()
     get_fk_info = f"(SELECT \
     constraint_schema `Constraint_Schema`, \
@@ -156,7 +164,7 @@ def get_fk_information(connection, schema_name, table_name):
 
 def get_fk_information_for_all_tables(connection):
     cursor = connection.cursor()
-    get_fk_info = f"SELECT \
+    get_fk_info = f"(SELECT \
     constraint_schema `Constraint_Schema`, \
     constraint_name `Constraint_Name`, \
     table_schema `Source_Schema`, \
@@ -167,7 +175,20 @@ def get_fk_information_for_all_tables(connection):
     referenced_column_name `Referenced_Column` \
     FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
     WHERE referenced_column_name IS NOT NULL \
-    AND table_schema in ('optimus','logs','wordpress','urls');"
+    AND table_schema in ('optimus','logs','urls')) \
+    UNION \
+    (SELECT \
+        `Constraint_Schema`, \
+        `Constraint_Name`, \
+        `Source_Schema`, \
+        `Source_Table`, \
+        `Source_Column`, \
+        `Referenced_Schema`, \
+        `Referenced_Table`, \
+        `Referenced_Column` \
+    FROM \
+        datateam.ForeignKeys \
+     );"
     cursor.execute(get_fk_info)
     columns = cursor.description
     foreign_key_data = [
