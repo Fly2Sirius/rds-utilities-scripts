@@ -6,6 +6,8 @@ from mysql.connector import Error
 import sys
 import colorama
 from colorama import Fore
+from rich.console import Console
+console = Console()
 
 local_test = False
 
@@ -34,15 +36,17 @@ print(
     + Fore.RESET
 )
 
+current = 1
 for value in foreign_key_data:
     connection = f.create_connection(
         mysql_host, mysql_user, mysql_password, mysql_port, mysql_database
     )
     cursor = connection.cursor()
-    count = f.get_foreign_key_data(connection, value)
+    with console.status(f"Checking... {value['Source_Table']}.{value['Source_Column']} in -> {value['Referenced_Table']}.{value['Referenced_Column']}", spinner="earth"):
+        count = f.get_foreign_key_data(connection, value)
     if count == None:
         continue
-    print(f"{value['Constraint_Schema']}.{value['Source_Table']}.{value['Source_Column']} - {value['Constraint_Name']} : ", end="")
+    print(f"{current}/{len(foreign_key_data)} {value['Constraint_Schema']}.{value['Source_Table']}.{value['Source_Column']} - {value['Constraint_Name']} : ", end="")
     if count[0][0] > 0:
         print(f"{value['Constraint_Schema']}.{value['Constraint_Name']} : ", end="")
         print(Fore.RED + f"{count[0][0]}")
@@ -55,3 +59,4 @@ for value in foreign_key_data:
         print(Fore.GREEN + "Good")
         print(Fore.RESET, end="")
         pass
+    current += 1

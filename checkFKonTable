@@ -9,6 +9,8 @@ import mysql.connector
 from mysql.connector import Error
 import colorama
 from colorama import Fore
+from rich.console import Console
+console = Console()
 
 local_test = None
 
@@ -55,12 +57,13 @@ print(
     + f"Total number of constraints in {schema_name}.{table_name}: {len(foreign_key_data)}"
     + Fore.RESET
 )
-
+current = 1
 for value in foreign_key_data:
-    count = f.get_foreign_key_data(connection, value)
+    with console.status(f"Checking... {value['Source_Table']}.{value['Source_Column']} in -> {value['Referenced_Table']}.{value['Referenced_Column']}", spinner="earth"):
+        count = f.get_foreign_key_data(connection, value)
     if count == None:
         continue
-    print(f"{value['Constraint_Schema']}.{value['Source_Table']}.{value['Source_Column']} - {value['Constraint_Name']} : ", end="")
+    print(f"{current}/{len(foreign_key_data)} {value['Constraint_Schema']}.{value['Source_Table']}.{value['Source_Column']} - {value['Constraint_Name']} : ", end="")
     if count[0][0] > 0:
         print(Fore.RED + f"{count[0][0]}")
         print(
@@ -71,3 +74,6 @@ for value in foreign_key_data:
     else:
         print(Fore.GREEN + "Good")
         print(Fore.RESET, end="")
+    current += 1
+
+

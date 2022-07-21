@@ -15,7 +15,7 @@ do
         echo -e "\e[1m\e[36m"
         qps=$(mysql  --protocol=tcp  --host=$server -P $port  -e '\s' | grep Threads | awk -F " " '{print $NF}')
         echo $(date) " - QPS " $qps
-        mysql  --protocol=tcp  --host=$server -P $port -e "select ID,DB,Host,User,Command,Time,left(Info,$left) as Query, right(Info,20) as QueryEnd from information_schema.processlist where Command not in ('Binlog Dump','Sleep','Connect','Daemon') and Time > 0 order by time desc limit $limit; set @count = (select count(*) as count from information_schema.processlist where Command not in ('Sleep','Daemon') and Time > 0); " 
+        mysql  --protocol=tcp  --host=$server -P $port -e "select ID,DB,Host,User,Command,Time,State,left(Info,$left) as Query, right(Info,20) as QueryEnd from information_schema.processlist where Command not in ('Binlog Dump','Sleep','Connect','Daemon') and Time > 0 order by time desc limit $limit; set @count = (select count(*) as count from information_schema.processlist where Command not in ('Sleep','Daemon') and Time > 0); " 
         # Show logged in user information
         #mysql  --protocol=tcp  --host=$server -P $port -e "set @count2 = (select count(*) as count from information_schema.processlist); set @count3 = (select count(*) as count from information_schema.processlist where User = 'greedo'); set @count4 = (select count(*) as count from information_schema.processlist where user = 'yoda'); set @count5 = (select count(*) as count from information_schema.processlist where user = 'tenant_write'); select @count as Running,@count2 as Connected,@count3 as greedo,@count4 as yoda,@count5 as tenant_write; select DB,User, count(*) as Count from information_schema.processlist where  Command not in ('Binlog Dump','Sleep','Daemon') group by DB, User order by count(*) limit 5; "
 
@@ -33,9 +33,13 @@ do
         # having count(1) > 3
         # order by count(1) desc; select substring_index(host, ':', 1) as IP , count(*) from information_schema.processlist group by substring_index(host, ':', 1);"
         
+        echo -e "\e[1m\e[31m"
+        mysql  --protocol=tcp  --host=$server -P $port -e "select user,count(1) as Count from information_schema.processlist where user not in ('greedo','kdavey','event_scheduler','rdsadmin','unauthenticated user','lendio_lake') group by user limit 10";
+
+
         # Show counts of loaded borrower Assignments
         echo -e "\e[1m\e[33m"
-        mysql  --protocol=tcp  --host=$server -P $port -e "select bab.bulkAssignmentid,bab.status,count(1) as Reassignmnets from optimus.bulkAssignmentBorrowers bab join optimus.bulkAssignments ba on bab.bulkAssignmentId = ba.id where bab.created > DATE_SUB(NOW(), INTERVAL 2 HOUR) and ba.deleted is NULL group by bab.status,bab.bulkAssignmentid;"
+        mysql  --protocol=tcp  --host=$server -P $port -e "select bab.bulkAssignmentid,bab.status,count(1) as Reassignmnets from optimus.bulkAssignmentBorrowers bab join optimus.bulkAssignments ba on bab.bulkAssignmentId = ba.id where bab.created > DATE_SUB(NOW(), INTERVAL 2 HOUR) and ba.deleted is NULL group by bab.status,bab.bulkAssignmentid order by bab.bulkAssignmentid;"
         # Show deadlock info
         #echo -e "\e[1m\e[31m"
         #mysql  --protocol=tcp  --host=$server -P $port -e "select * from datateam.parker1\G";
