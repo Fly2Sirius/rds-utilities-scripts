@@ -72,6 +72,26 @@ where b.id between 1 and 5000;
 
 truncate table datateam.idsToDelete;
 
+insert ignore into datateam.idsToDelete (idsToDelete) 
+select borrowerId from optimus.actvities x
+left join optimus.borrowers b on x.borrowerId = b.id
+    where b.id is NULL
+    and x.created > DATE_SUB(NOW(), INTERVAL 30 DAY)
+    group by borrowerId;
+   
+delete x from optimus.activities x
+join datateam.idsToDelete b on x.borrowerId = b.idsToDelete
+where b.id between 1 and 5000;
+
+truncate table datateam.idsToDelete;
+
+
+
+
+
+
+
+
 
 
 
