@@ -14,32 +14,33 @@ rds = boto3.client('rds')
 
 #for item in response:
 #    print("key : {}, Value : {}".format(item,response[item]))
-print("Clusters")
-try:
-# get all of the db instances
-    dbs = rds.describe_db_clusters(
-        DBClusterIdentifier='',
-        Filters=[
-            {
-                'Name': 'engine',
-                'Values': [
-                    'aurora-mysql',
-                ],
-                'Name': 'DBInstanceClass',
-                'Values': [
-                    'db.serverless',
-                ]
-            }]
-    )
-    for db in dbs['DBClusters']:
-        print (db['DBClusterIdentifier']
-            #,db['Engine']
-            #,db['DBClusterMembers']['DBInstanceIdentifiers'][1]
-            )
-            #db['Endpoint']['Port'],
-            #db['DBInstanceStatus'])
-except Exception as error:
-    print(error)
+# print("Clusters")
+# try:
+# # get all of the db instances
+#     dbs = rds.describe_db_clusters(
+#         DBClusterIdentifier='',
+#         Filters=[
+#             {
+#                 'Name': 'engine',
+#                 'Values': [
+#                     'aurora-mysql',
+#                 ]
+#                 # ,
+#                 # 'Name': 'DBInstanceClass',
+#                 # 'Values': [
+#                 #     'db.serverless',
+#                 # ]
+#             }]
+#     )
+#     for db in dbs['DBClusters']:
+#         print (db['DBClusterIdentifier']
+#             #,db['Engine']
+#             #,db['DBClusterMembers']['DBInstanceIdentifiers'][1]
+#             )
+#             #db['Endpoint']['Port'],
+#             #db['DBInstanceStatus'])
+# except Exception as error:
+#     print(error)
 
 print("Instances")
 try:
@@ -51,24 +52,32 @@ try:
                 'Name': 'engine',
                 'Values': [
                     'aurora-mysql',
+                ],
+                'Name':'TagList', 
+                'Values': [ 
+                    {'Key': 'datadog_monitor_cluster', 'Value': 'prod'}
                 ]
+                #,
+                # 'Name': f'tag:{copyFromName}',
+                # 'Values': 'production'
             }]
     )
     for db in dbs['DBInstances']:
-        print (db['DBInstanceIdentifier']
+        #print (db['DBInstanceIdentifier']
             #,db['Engine']
             #,db['DBClusterMembers']['DBInstanceIdentifiers'][1]
-            )
+        #   )
+        print(db)
             #db['Endpoint']['Port'],
             #db['DBInstanceStatus'])
 except Exception as error:
     print(error)
 
-try:
-# get all of the db instances
-    dbs = rds.describe_db_clusters(
-        DBClusterIdentifier='production-homeportal-1e1c8080-f217-49ad-9f0b-cb7aec17b44e'
-    )
-    #print (db)
-except Exception as error:
-    print(error)
+# try:
+# # get all of the db instances
+#     dbs = rds.describe_db_clusters(
+#         DBClusterIdentifier='production-homeportal-1e1c8080-f217-49ad-9f0b-cb7aec17b44e'
+#     )
+#     #print (db)
+# except Exception as error:
+#     print(error)
