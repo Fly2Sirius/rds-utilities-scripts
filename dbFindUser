@@ -10,13 +10,3 @@ if [ -z ${1} ]; then
 fi
 
 mysql  --protocol=tcp  --host=$server -P $port -e "select user,host,plugin from mysql.user where user like '%"$1"%'"
-
-
-
-arn:aws:ecr:us-east-1:196375513521:repository/databricks-clusters
-
-
-
-
-
-M^Ydv$2V^Do$ZjohZX3SCap7py4RaU
