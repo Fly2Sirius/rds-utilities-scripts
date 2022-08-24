@@ -29,5 +29,6 @@ sql="$sql SET DEFAULT ROLE ALL TO \`${1}\`@\`10.%.%.%\`;"
 
 echo $sql
 
+mysql -h $3 -e "$sql"
 
 
