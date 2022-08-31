@@ -15,38 +15,33 @@ else:
     print("You must supply a username: createUser username")
     sys.exit()
 
-def run_command(connection, command):
-    cursor = connection.cursor()
-    try:
-        cursor.execute(command)
-    except Error as e:
-        print(f"The error '{e}' occurred")
 
-def get_mysql_credentials():
-    home_dir = Path.home()
-    conf = ".my.cnf"
-    conf = os.path.join(home_dir, conf)
-    config = ConfigParser()
-    config.read(conf)
-    mysql_user = config.get("client", "user")
-    mysql_password = config.get("client", "password")
-    return mysql_user, mysql_password
 
-def create_connection(host_name, user_name, user_password, mysql_port, mysql_database):
-    connection = None
-    try:
-        connection = mysql.connector.connect(
-            host=host_name,
-            user=user_name,
-            passwd=user_password,
-            port=mysql_port,
-            database=mysql_database,
-        )
-        print(f"Connection to {host_name} successful")
-    except Error as e:
-        print(f"The error '{e}' occurred")
-        sys.exit()
-    return connection
+# def get_mysql_credentials():
+#     home_dir = Path.home()
+#     conf = ".my.cnf"
+#     conf = os.path.join(home_dir, conf)
+#     config = ConfigParser()
+#     config.read(conf)
+#     mysql_user = config.get("client", "user")
+#     mysql_password = config.get("client", "password")
+#     return mysql_user, mysql_password
+
+# def create_connection(host_name, user_name, user_password, mysql_port, mysql_database):
+#     connection = None
+#     try:
+#         connection = mysql.connector.connect(
+#             host=host_name,
+#             user=user_name,
+#             passwd=user_password,
+#             port=mysql_port,
+#             database=mysql_database,
+#         )
+#         print(f"Connection to {host_name} successful")
+#     except Error as e:
+#         print(f"The error '{e}' occurred")
+#         sys.exit()
+#     return connection
 
 mysql_host = "production.civpyhkigzas.us-east-1.rds.amazonaws.com"
 new_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
@@ -59,7 +54,7 @@ try:
         for line in file_object:
             command = line.replace("USERNAME", username)
             command = command.replace("PASSWORD_STRING", new_password)
-            run_command(connection, command)
+            f.run_mysql_command(connection, command)
 
 except:
     if file_object.closed == False:

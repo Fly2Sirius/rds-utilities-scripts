@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+import sys
+import boto3
+import botocore
+import random
+import string
+import time
+import funcs as f
+import mysql.connector
+from mysql.connector import Error
+from configparser import ConfigParser
+from pathlib import Path
+import os
+
+
+def evaluate_end_condition(status):
+    #print(status.lower())
+    if status.lower()=="available":
+        return True
+    else:
+        return False
+
+
+def create_aurora(
+    service_name, # used for instance name and cluster name
+):    
+    cluster_name = "".join(service_name + "-cluster")
+    instance_name = "".join(service_name + "-instance-1")
+    db_username = 'root'
+    db_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
+    if("production" in service_name.lower()):
+        print("Creating Production Cluster")
+        dbsubnetgroup_name = 'default-vpc-0d4bd66cbd5a11024'
+        vpc_sg = ['sg-0085f88106776d870']
+        vpc_id = 'vpc-0d4bd66cbd5a11024'
+    elif("staging" in service_name.lower()):
+        print(f"Creating Staging Cluster {cluster_name}")
+        dbsubnetgroup_name='default-vpc-0ace8a1c8c8342182-1'
+        vpc_sg=['sg-05550332f2241ba87']
+        vpc_id = 'vpc-0ace8a1c8c8342182'
+    else:
+        print("Niether production or staging found")
+        exit()
+    rds = boto3.client('rds')
+    # 
+    # Search if the cluster exists
+    try:    
+        db_cluster = rds.describe_db_clusters(
+            DBClusterIdentifier = cluster_name
+        )['DBClusters']    
+        db_cluster = db_cluster[0]
+    except botocore.exceptions.ClientError   as e:
+        print("Creating empty cluster...");
+        res = rds.create_db_cluster(
+            DBClusterIdentifier = cluster_name,
+            Engine="aurora-mysql",
+            EngineVersion="8.0.mysql_aurora.3.02.0",
+            MasterUsername=db_username,
+            MasterUserPassword=db_password,
+            DBSubnetGroupName=dbsubnetgroup_name,
+            VpcSecurityGroupIds=vpc_sg,
+            ServerlessV2ScalingConfiguration={
+                'MinCapacity': 1,
+                'MaxCapacity': 4
+            },
+        )
+        db_cluster = res['DBCluster']
+    cluster_name = db_cluster['DBClusterIdentifier']
+    instance_identifier = db_cluster['DBClusterIdentifier']
+    if (db_cluster['Status'] == 'deleting'):
+        print(" Please wait for the cluster to be deleted and try again.")
+        return None
+    # Now create instances
+    try:
+        res = rds.create_db_instance(
+            DBInstanceIdentifier=instance_name,
+            DBInstanceClass="db.serverless",
+            Engine='aurora-mysql',
+            PubliclyAccessible=False,
+            DBSubnetGroupName=dbsubnetgroup_name,
+            DBClusterIdentifier=cluster_name
+        )['DBInstance']
+    except botocore.exceptions.ClientError   as e:
+        print(" Instance seems to exist.")
+    res = rds.describe_db_instances(DBInstanceIdentifier = instance_name)['DBInstances']
+    print(f"Creating Instance : {instance_name}",end=".",flush=True)
+    finished = False
+    while not finished:
+        print("",end=".",flush=True)
+        time.sleep(5)
+        res = rds.describe_db_instances(DBInstanceIdentifier = instance_name)['DBInstances']
+        finished = evaluate_end_condition(res[0]['DBInstanceStatus'])
+    print("")
+    print(f"Cluster identifier -> {instance_identifier}")
+    db_connection_string = res[0]['DBInstanceIdentifier'] + ".civpyhkigzas.us-east-1.rds.amazonaws.com"
+    return db_connection_string,db_password,db_username
+
+
+
+
+if len(sys.argv) > 2:
+    service_name = sys.argv[1]
+    database_name = sys.argv[2]
+else:
+    print("You must supply a service name and database name: dbTest.py [production|staging]-service-name database-name")
+    sys.exit()
+
+db_connection_string,db_password,db_username = create_aurora(service_name)
+
+print("Setting up users and roles...")
+new_user = database_name
+new_worker = "".join(new_user + "_worker")
+new_user_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
+new_worker_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
+
+connection = f.create_connection(db_connection_string, db_username, db_password, 3306, "mysql")
+
+try:
+    with open("config/.setupNewServer8.sql", "r") as file_object:
+        command = ""
+        for line in file_object:
+            if len(line.strip()) == 0:
+                continue
+            command = line.replace("DATABASE_NAME", database_name)
+            command = command.replace("USER1", new_user)
+            command = command.replace("USER2", new_worker)
+            command = command.replace("PASSWORD1", new_user_password)
+            command = command.replace("PASSWORD2", new_worker_password)
+            f.run_mysql_command(connection, command)
+except:
+    if file_object.closed == False:
+        print("File is not closed")
+    else:
+        print("File is closed")
+
+print("")
+print(f"Database Instance -> {db_connection_string}")
+print(f"Database Name -> {database_name}")
+print(f"Master Username -> {db_username}")
+print(f"Master Username -> {db_password}")
+print(f"New User -> {new_user}")
+print(f"Password -> {new_user_password}")
+print(f"New Worker -> {new_worker}")
+print(f"New Worker Password -> {new_worker_password}")

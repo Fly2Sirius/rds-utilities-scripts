@@ -219,3 +219,11 @@ def get_foreign_key_data(connection, value):
     except mysql.connector.Error as err:
         print(err)
     return count
+
+
+def run_mysql_command(connection, command):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(command)
+    except Error as e:
+        print(f"The error '{e}' occurred")
