@@ -54,15 +54,3 @@ do
 done
 
 
-
-  `borrowers`.`id`,
-  `borrowers`.`applicationComplete`,
-  `borrowers`.`created`,
-  `borrowers`.`jumpballModified`,
-  `borrowers`.`leadMedium`,
-  `borrowers`.`leadSource`,
-  `borrowers`.`mineralGroup`,
-  `borrowers`.`name`,
-  `borrowers`.`pppAppComplete`,
-  `borrowers`.
-  :
