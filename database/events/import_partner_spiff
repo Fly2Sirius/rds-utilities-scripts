@@ -1,0 +1,21 @@
+DROP EVENT IF EXISTS `optimus`.`import_partner_spiff`;
+
+DELIMITER ;;
+
+CREATE EVENT `optimus`.`import_partner_spiff` ON SCHEDULE EVERY 1 HOUR STARTS '2022-10-01 00:00:01' 
+    ON COMPLETION NOT PRESERVE 
+    ENABLE COMMENT 'Imports partner spiff data from S3 dump from Snowflake' DO BEGIN
+    
+    truncate table optimus.partnerCommissions;
+
+    LOAD DATA FROM S3  's3://lendio-aurora-snowflake/partner_spiff.csv'
+    IGNORE INTO TABLE optimus.partnerCommissions
+    FIELDS TERMINATED BY ','
+    LINES TERMINATED BY '\n'
+    (opportunityId, dealid, borrowerId,partnerCommission);
+
+
+END;;
+DELIMITER ;
+
+
