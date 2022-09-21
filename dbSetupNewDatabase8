@@ -29,7 +29,7 @@ def create_aurora(
     db_username = 'root'
     db_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
     if("production" in service_name.lower()):
-        print("Creating Production Cluster")
+        print(f"Creating Production Cluster {cluster_name}")
         dbsubnetgroup_name = 'default-vpc-0d4bd66cbd5a11024'
         vpc_sg = ['sg-0085f88106776d870']
         vpc_id = 'vpc-0d4bd66cbd5a11024'
@@ -42,6 +42,7 @@ def create_aurora(
         print("Niether production or staging found")
         exit()
     rds = boto3.client('rds')
+    #time.sleep(15)
     # 
     # Search if the cluster exists
     try:    
@@ -60,9 +61,9 @@ def create_aurora(
             DBSubnetGroupName=dbsubnetgroup_name,
             VpcSecurityGroupIds=vpc_sg,
             ServerlessV2ScalingConfiguration={
-                'MinCapacity': 1,
-                'MaxCapacity': 4
-            },
+                 'MinCapacity': 1,
+                 'MaxCapacity': 4
+            }
         )
         db_cluster = res['DBCluster']
     cluster_name = db_cluster['DBClusterIdentifier']
@@ -81,7 +82,9 @@ def create_aurora(
             DBClusterIdentifier=cluster_name
         )['DBInstance']
     except botocore.exceptions.ClientError   as e:
+        print (e)
         print(" Instance seems to exist.")
+    time.sleep(5)
     res = rds.describe_db_instances(DBInstanceIdentifier = instance_name)['DBInstances']
     print(f"Creating Instance : {instance_name}",end=".",flush=True)
     finished = False
@@ -108,7 +111,7 @@ else:
 db_connection_string,db_password,db_username = create_aurora(service_name)
 
 print("Setting up users and roles...")
-new_user = database_name
+new_user = database_name.replace("-", "_")
 new_worker = "".join(new_user + "_worker")
 new_user_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
 new_worker_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
