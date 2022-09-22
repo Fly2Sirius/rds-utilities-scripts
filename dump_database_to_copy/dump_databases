@@ -1,0 +1,18 @@
+#!/bin/bash
+
+source_server="production.civpyhkigzas.us-east-1.rds.amazonaws.com"
+destination_server="production.civpyhkigzas.us-east-1.rds.amazonaws.com"
+new_database_prefix="remove_me_"
+file=$(cat headway.txt)
+
+for existing_database_name in $file
+do
+echo -e "Copying => $existing_database_name"
+new_database_name="$new_database_prefix$existing_database_name"
+cmd="mysql -h$destination_server -e \"drop database if exists $new_database_name; create database $new_database_name;\""
+eval $cmd
+echo $cmd
+cmd="time mysqldump -h$source_server $existing_database_name | sed 's/DEFINER=[^*]*\*/\*/g' | mysql -h$destination_server $new_database_name"
+eval $cmd
+echo $cmd
+done
