@@ -6,12 +6,6 @@ fundingcircle_oauth
 fundingcircle_optimus
 fundingcircle_urls
 fundingcircle_wordpress
-headway_lenders
-headway_logs
-headway_oauth
-headway_optimus
-headway_urls
-headway_wordpress
 lake_validation
 lender_data
 lenders
