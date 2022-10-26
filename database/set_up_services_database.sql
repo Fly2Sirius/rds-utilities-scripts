@@ -51,31 +51,7 @@ ALTER USER 'tax_api_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' A
 GRANT tax_service_role TO 'tax_api_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `tax_api_worker`@`10.%.%.%`;
 
--- MySQL 8 - bank_service
--- production-bank-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
--- staging-bank-service-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
-
--- set up database
-create database if not exists `bank_service`;
-
--- bank_service roles:
-GRANT SELECT, SHOW VIEW ON `bank_service`.* TO `developer`@`%`;
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `bank_service`.* TO `bank_service_role`@`%`;
-
--- bank_service
-CREATE USER IF NOT EXISTS 'bank_api'@'10.%.%.%';
-ALTER USER 'bank_api'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*E8A0E76DD5A12C873E4FCAAFC03A1C09B417F17B'  REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
-GRANT bank_service_role TO 'bank_api'@'10.%.%.%';
-SET DEFAULT ROLE ALL TO `bank_api`@`10.%.%.%`;
-
--- bank_service_worker
-CREATE USER IF NOT EXISTS 'bank_api_worker'@'10.%.%.%';
-ALTER USER 'bank_api_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*988877FEC187579AA5F4055724477943520CA16B' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
-GRANT bank_service_role TO 'bank_api_worker'@'10.%.%.%';
-SET DEFAULT ROLE ALL TO `bank_api_worker`@`10.%.%.%`;
-
-
--- MySQL 8 - smb_invoices_service_worker-service
+-- MySQL 8 - smb_invoices_service_-service
 -- production-smb-invoices-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-smb-invoices-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 
@@ -104,33 +80,29 @@ GRANT invoices_service_role TO 'smb_invoices_service_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `smb_invoices_service_worker`@`10.%.%.%`;
 
 
--- MySQL 8 - smb-smb_payments_service_worker-service
+-- MySQL 8 - smb_payments_service_worker-service
 -- production-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
-
-
 create database if not exists `smb_payments_service`;
 
 -- smb_payments_service roles:
 GRANT SELECT, SHOW VIEW ON `smb_payments_service`.* TO `developer`@`%`;
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `payments_service_role`.* TO `smb_payments_role`@`%`;
 
--- financial_integration
+-- smb_payments_service
 CREATE USER IF NOT EXISTS 'smb_payments_service'@'10.%.%.%';
 ALTER USER 'smb_payments_service'@'10.%.%.%' IDENTIFIED BY 'KCMT2KD1G5RIJYF' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 -- STAGING
 -- ALTER USER 'smb_payments_service'@'10.%.%.%' IDENTIFIED BY 'U49KO2N5M2PPVXH' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 GRANT smb_paympayments_service_roleents_role TO 'smb_payments_service'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `smb_payments_service`@`10.%.%.%`;
--- financial_integration_worker
+-- smb_payments_service_worker
 CREATE USER IF NOT EXISTS 'smb_payments_service_worker'@'10.%.%.%';
 ALTER USER 'smb_payments_service_worker'@'10.%.%.%' IDENTIFIED BY 'OESO38KCEVSMCLH' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 -- STAGING
 -- ALTER USER 'smb_payments_service_worker'@'10.%.%.%' IDENTIFIED BY 'XV86WLHR7RSHX6A' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 GRANT payments_service_role TO 'smb_payments_service_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `smb_payments_service_worker`@`10.%.%.%`;
-
-
 
 -- MySQL 8 - smb_notifications_service
 -- production-smb-notifications-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
@@ -155,6 +127,128 @@ GRANT notifications_service_role TO 'smb_notifications_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `smb_notifications_worker`@`10.%.%.%`;
 
 
+-- MySQL 8 - embedded_service
+
+-- set up database
+create database if not exists `embedded_service`;
+
+-- embedded_service roles:
+GRANT SELECT, SHOW VIEW ON `embedded_service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `embedded_service`.* TO `embedded_service_role`@`%`;
+
+-- embedded_service
+CREATE USER IF NOT EXISTS 'embedded_service'@'10.%.%.%';
+ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED BY '8jaiBvTsduufTxnU9f' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service`@`10.%.%.%`;
+-- embedded_service_worker
+CREATE USER IF NOT EXISTS 'embedded_service_worker'@'10.%.%.%';
+ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED BY '8jai3fThuscRtnU9X' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service_worker'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service_worker`@`10.%.%.%`;
+
+
+
+bussdb -e "select CONCAT(\"call mysql.rds_kill(\",ID,\");\") from information_schema.processlist where user like '%service'"
+
+bussdb -e "select * from information_schema.processlist where user like '%service'"
+
+bspdb -e "select CONCAT(\"call mysql.rds_kill(\",ID,\");\") from information_schema.processlist where user like '%service'"
+
+bspdb -e "select * from information_schema.processlist where user like '%service'"
+
+ALTER USER 'bank_service'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*F8A0E76DD5A12C873E4FCAAFC03A1C09B417F17B' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+
+mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com -e "select * from information_schema.processlist where user like '%service'"
+
+
+-- production-bank-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+-- staging-bank-service-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hproduction-bank-service.cluster-civpyhkigzas.us-east-1.rds.amazonaws.com bank_service | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com bank_service
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-bank-service.cluster-civpyhkigzas.us-east-1.rds.amazonaws.com bank_service | mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com bank_service
+
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hpproduction-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com enrichment_service | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com enrichment_service
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com enrichment_service | mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com enrichment_service
+
+
+-- production-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+-- staging-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- MySQL 8 - bank_service
+-- production-bank-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+-- staging-bank-service-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+
+-- set up database
+create database if not exists `bank_service`;
+
+-- bank_service roles:
+GRANT SELECT, SHOW VIEW ON `bank_service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `bank_service`.* TO `bank_service_role`@`%`;
+
+-- bank_service
+CREATE USER IF NOT EXISTS 'bank_api'@'10.%.%.%';
+ALTER USER 'bank_api'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*E8A0E76DD5A12C873E4FCAAFC03A1C09B417F17B'  REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT bank_service_role TO 'bank_api'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `bank_api`@`10.%.%.%`;
+
+-- bank_service_worker
+CREATE USER IF NOT EXISTS 'bank_api_worker'@'10.%.%.%';
+ALTER USER 'bank_api_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*988877FEC187579AA5F4055724477943520CA16B' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT bank_service_role TO 'bank_api_worker'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `bank_api_worker`@`10.%.%.%`;
+
 -- MySQL 8 - business_service
 -- production-business-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-business-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
@@ -166,7 +260,7 @@ create database if not exists `business_service`;
 GRANT SELECT, SHOW VIEW ON `business_service`.* TO `developer`@`%`;
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `business_service`.* TO `business_service_role`@`%`;
 
--- smb_notifications
+-- business_service
 CREATE USER IF NOT EXISTS 'business_service'@'10.%.%.%';
 ALTER USER 'business_service'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*829249BBF128E952C8340841CBAE82175C37B7A9' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 GRANT business_service_role TO 'business_service'@'10.%.%.%';
@@ -176,55 +270,38 @@ CREATE USER IF NOT EXISTS 'business_service_worker'@'10.%.%.%';
 ALTER USER 'business_service_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*D69DF5B319BE6B87BDF17E0C39D262E827AE5390' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 GRANT business_service_role TO 'business_service_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `business_service_worker`@`10.%.%.%`;
--- MySQL 8 - business_service
+
+-- MySQL 8 - enrichment_service
 -- production-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 
 -- set up database
 create database if not exists `enrichment_service`;
 
--- business_service roles:
+-- enrichment_service roles:
 GRANT SELECT, SHOW VIEW ON `enrichment_service`.* TO `developer`@`%`;
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `enrichment_service`.* TO `enrichment_service_role`@`%`;
 
--- smb_notifications
+-- enrichment_service
 CREATE USER IF NOT EXISTS 'cashflow_enrichment'@'10.%.%.%';
 ALTER USER 'cashflow_enrichment'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*6666877A7128B889335824863AF3AA4C472324A8' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 GRANT enrichment_service_role TO 'cashflow_enrichment'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `cashflow_enrichment`@`10.%.%.%`;
--- business_service_worker
+-- enrichment_service_worker
 CREATE USER IF NOT EXISTS 'cashflow_enrichment_worker'@'10.%.%.%';
 ALTER USER 'cashflow_enrichment_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*4CB98DE648267710716DABCF72CF81CD54559832' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 GRANT enrichment_service_role TO 'cashflow_enrichment_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `cashflow_enrichment_worker`@`10.%.%.%`;
 
 
--- MySQL 8 - embedded_service
-
--- set up database
-create database if not exists `embedded_service`;
-
--- business_service roles:
-GRANT SELECT, SHOW VIEW ON `embedded_service`.* TO `developer`@`%`;
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `embedded_service`.* TO `embedded_service_role`@`%`;
-
--- smb_notifications
-CREATE USER IF NOT EXISTS 'embedded_service'@'10.%.%.%';
-ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED BY '8jaiBvTsduufTxnU9f' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
-GRANT embedded_service_role TO 'embedded_service'@'10.%.%.%';
-SET DEFAULT ROLE ALL TO `embedded_service`@`10.%.%.%`;
--- business_service_worker
-CREATE USER IF NOT EXISTS 'embedded_service_worker'@'10.%.%.%';
-ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED BY '8jai3fThuscRtnU9X' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
-GRANT embedded_service_role TO 'embedded_service_worker'@'10.%.%.%';
-SET DEFAULT ROLE ALL TO `embedded_service_worker`@`10.%.%.%`;
-
-
 
 
 
 -- Create Users
-
+CREATE USER IF NOT EXISTS 'lendio_lake'@'%';
+ALTER USER 'lendio_lake'@'%' IDENTIFIED WITH 'mysql_native_password' AS '*F4E971CB6C1217E863A77584F568076B13F43468' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT REPLICATION CLIENT, REPLICATION SLAVE, SELECT ON *.* TO 'lendio_lake'@'%';
+GRANT SELECT ON `bank_service`.* TO 'lendio_lake'@'%';
 
 CREATE USER IF NOT EXISTS 'djones'@'10.%.%.%';
 ALTER USER 'djones'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*E6723A14E22B3FC8864003445B23AABAB3755B07' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK PASSWORD HISTORY DEFAULT PASSWORD REUSE INTERVAL DEFAULT PASSWORD REQUIRE CURRENT DEFAULT;
@@ -263,14 +340,14 @@ GRANT `developer`@`%` TO `mattstyles`@`10.%.%.%`;
 SET DEFAULT ROLE ALL TO `mattstyles`@`10.%.%.%`;
 
 CREATE USER IF NOT EXISTS 'parker'@'10.%.%.%';
-ALTER USER 'parker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*840F9F4DAB4403CB940D140845D226E09554B9BC' DEFAULT ROLE `admin`@`%` REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK PASSWORD HISTORY DEFAULT PASSWORD REUSE INTERVAL DEFAULT PASSWORD REQUIRE CURRENT DEFAULT;
+ALTER USER 'parker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*840F9F4DAB4403CB940D140845D226E09554B9BC' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK PASSWORD HISTORY DEFAULT PASSWORD REUSE INTERVAL DEFAULT PASSWORD REQUIRE CURRENT DEFAULT;
 GRANT USAGE ON *.* TO `parker`@`10.%.%.%`;
 GRANT `admin`@`%` TO `parker`@`10.%.%.%`;
 SET DEFAULT ROLE ALL TO `parker`@`10.%.%.%`;
 
 CREATE USER IF NOT EXISTS 'bryanlee'@'10.%.%.%';
 ALTER USER 'bryanlee'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*57795EBD9BCB513C8A719745029B8B1EF80D9029' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK PASSWORD HISTORY DEFAULT PASSWORD REUSE INTERVAL DEFAULT PASSWORD REQUIRE CURRENT DEFAULT;
-GRANT USAGE ON *.* TO `bryanlee`@`10.%.%.%`;production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+GRANT USAGE ON *.* TO `bryanlee`@`10.%.%.%`;
 GRANT `developer`@`%` TO `bryanlee`@`10.%.%.%`;
 SET DEFAULT ROLE ALL TO `bryanlee`@`10.%.%.%`;
 
@@ -285,9 +362,3 @@ ALTER USER 'sethadamson'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '
 GRANT USAGE ON *.* TO `sethadamson`@`10.%.%.%`;
 GRANT `developer`@`%` TO `sethadamson`@`10.%.%.%`;
 SET DEFAULT ROLE ALL TO `sethadamson`@`10.%.%.%`;
-
-
-
-
-mysqldump -hproduction-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com  smb-payments-service | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb_payments_service
-mysqldump -hstaging-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-payments-service | | mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb_payments_service

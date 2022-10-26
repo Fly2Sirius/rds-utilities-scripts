@@ -1,0 +1,17 @@
+DROP table if exists `datateam`.`query_info`;
+
+CREATE TABLE `datateam`.`query_info` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `previous_uptime_sec` int(11) unsigned NOT NULL,
+  `current_uptime_sec` int(11) unsigned NOT NULL,
+  `current_uptime_sec_difference` int(11) unsigned GENERATED ALWAYS AS (current_uptime_sec-previous_uptime_sec) STORED,
+  `previous_query_count` int(11) unsigned NOT NULL,
+  `current_query_count` int(11) unsigned NOT NULL,
+  `previous_slow_query_count` int(11) unsigned NOT NULL,
+  `current_slow_query_count` int(11) unsigned NOT NULL,
+  `current_slow_query_difference` int(11) unsigned GENERATED ALWAYS AS (current_slow_query_count-previous_slow_query_count) STORED,
+  `current_slow_query_per_second` int(11) unsigned GENERATED ALWAYS AS ((current_slow_query_count*previous_slow_query_count)/(current_uptime_sec_difference)) STORED,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
