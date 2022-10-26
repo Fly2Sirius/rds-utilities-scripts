@@ -1,0 +1,44 @@
+
+*Stop bank_service and smb_cashflow servers
+*Add new borrowerMatches cleanup SP's to event
+Talk to Paul about cleaning up messages table
+*Look for borrowerValues missing valid borrowerIds
+Look for activites missing valid borrowerid's
+Can we clean up failed_jobs log table?
+
+select count(*) from borrowerValues bv
+    left join borrowers b on bv.borrowerId = b.Id
+    where b.Id IS NULL; -- 0
+
+
+-- BorrowerValues set for borrowerAttributes that don't exist or have been deleted.
+select count(1) from borrowerValues bv
+    left join borrowerAttributes b on bv.attributeId = b.Id
+    where (b.Id IS NULL or b.deleted IS NOT NULL); -- 45881
+
+-- Messages that are assigned to a borrower that doesn't exist
+select count(*) from messages m
+    left join borrowers b on m.borrowerId = b.Id
+    where b.Id IS NULL; --1,655,439 (32M total records)
+
+-- Tables set to UTF8 ordered by size
+    select x.*
+    ,SUM(ROUND(((DATA_LENGTH) + (INDEX_LENGTH)) / 1024 / 1024 /1024 ) )AS `Total Length (GB)`
+    from information_schema.tables t 
+    join (
+         select 
+    c.table_schema
+    ,c.table_name
+    ,c.character_set_name 
+    from information_schema.columns c
+    -- where c.character_set_name like 'utf8m%'
+    where c.character_set_name = 'utf8'
+    and c.table_schema not in ('information_schema','mysql','performance_schema','datateam','sys')
+    group by c.table_schema, c.table_name,c.character_set_name ) x on t.table_schema = x.table_schema and t.table_name = x.table_name
+    group by table_schema,table_name, character_set_name
+    order by SUM(ROUND(((DATA_LENGTH) + (INDEX_LENGTH)) / 1024 / 1024 /1024 ) ) DESC;
+
+-- Activities missing the borrowerId
+select count(*) from activities a
+left join borrowers b on a.borrowerId = b.id
+where b.id IS NULL; -- 0
