@@ -3,7 +3,7 @@
 -- staging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 CREATE ROLE IF NOT EXISTS `enrichment_service_role`,`business_service_role`,`notifications_service_role`,`embedded_service_role`,`payments_service_role`,`invoices_service_role`,`bank_service_role`,`tax_service_role`,`fin_integration_service_role`, `admin`, `developer`;
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, PROCESS, REFERENCES, INDEX, ALTER, SHOW DATABASES, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER ON *.* TO `admin`@`%` ;
-
+notifications
 
 -- MySQL 8 - financial_integration finsdb
 -- production-financial-integration-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
@@ -28,6 +28,12 @@ ALTER USER 'financial_integration_worker'@'10.%.%.%' IDENTIFIED BY '8VLYPadQGMP3
 GRANT fin_integration_service_role TO 'financial_integration_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `financial_integration_worker`@`10.%.%.%`;
 
+
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hproduction-financial-integration-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com financial_integration | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com financial_integration
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com financial_integration | mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com financial_integration
+
+
+
 -- MySQL 8 - tax_service
 -- production-tax-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-tax-service-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
@@ -51,16 +57,25 @@ ALTER USER 'tax_api_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' A
 GRANT tax_service_role TO 'tax_api_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `tax_api_worker`@`10.%.%.%`;
 
--- MySQL 8 - smb_invoices_service_-service
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hproduction-tax-service.cluster-civpyhkigzas.us-east-1.rds.amazonaws.com tax_service | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com tax_service
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-tax-service.cluster-civpyhkigzas.us-east-1.rds.amazonaws.com  tax_service| mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com tax_service
+
+
+-- MySQL 8 - smb-invoices-service
 -- production-smb-invoices-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-smb-invoices-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hproduction-smb-invoices-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-invoices-service | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-invoices-service
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-smb-invoices-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com  smb-invoices-service| mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-invoices-service
+
+
 
 -- set up database
 create database if not exists `smb-invoices-service`;
 
 -- smb_invoices_service roles:
-GRANT SELECT, SHOW VIEW ON `smb_invoices_service`.* TO `developer`@`%`;
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `smb_invoices_service`.* TO `invoices_service_role`@`%`;
+GRANT SELECT, SHOW VIEW ON `smb-invoices-service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `smb-invoices-service`.* TO `invoices_service_role`@`%`;
 
 -- smb_invoices_service
 CREATE USER IF NOT EXISTS 'smb_invoices_service'@'10.%.%.%';
@@ -76,6 +91,7 @@ CREATE USER IF NOT EXISTS 'smb_invoices_service_worker'@'10.%.%.%';
 ALTER USER 'smb_invoices_service_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*8955ECC34F5AE1D165C91BB8FF09EA6C65CE8716' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 -- STAGING
 -- ALTER USER 'smb_invoices_service_worker'@'10.%.%.%' IDENTIFIED BY '6ELCWUC09MKVRBV' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+
 GRANT invoices_service_role TO 'smb_invoices_service_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `smb_invoices_service_worker`@`10.%.%.%`;
 
@@ -83,18 +99,43 @@ SET DEFAULT ROLE ALL TO `smb_invoices_service_worker`@`10.%.%.%`;
 -- MySQL 8 - smb_payments_service_worker-service
 -- production-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
-create database if not exists `smb_payments_service`;
+create database if not exists `smb-payments-service`;
+
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hproduction-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-payments-service | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-payments-service
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-smb-payments-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com  smb-payments-service| mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-payments-service
+
+
+
+
 
 -- smb_payments_service roles:
-GRANT SELECT, SHOW VIEW ON `smb_payments_service`.* TO `developer`@`%`;
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `payments_service_role`.* TO `smb_payments_role`@`%`;
+GRANT SELECT, SHOW VIEW ON `smb-payments-service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `smb-payments-service`.* TO `smb_payments_role`@`%`;
 
 -- smb_payments_service
 CREATE USER IF NOT EXISTS 'smb_payments_service'@'10.%.%.%';
-ALTER USER 'smb_payments_service'@'10.%.%.%' IDENTIFIED BY 'KCMT2KD1G5RIJYF' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
--- STAGING
--- ALTER USER 'smb_payments_service'@'10.%.%.%' IDENTIFIED BY 'U49KO2N5M2PPVXH' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
-GRANT smb_paympayments_service_roleents_role TO 'smb_payments_service'@'10.%.%.%';
+ALTER USER 'smb_payments_service'@'10.%.%.%' I-- set up database
+create database if not exists `embedded_service`;
+CREATE ROLE IF NOT EXISTS `embedded_service_role`;
+
+-- embedded_service roles:
+GRANT SELECT, SHOW VIEW ON `embedded_service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `embedded_service`.* TO `embedded_service_role`@`%`;
+
+-- embedded_service
+CREATE USER IF NOT EXISTS 'embedded_service'@'10.%.%.%';
+ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED by 'n97v7CnaKWymq5vK43' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- Staging
+-- ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED by 'zGC7ytGL28AMwcYyAT' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service`@`10.%.%.%`;
+-- embedded_service_worker
+CREATE USER IF NOT EXISTS 'embedded_service_worker'@'10.%.%.%';
+ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED by 'WoaB4n2RohfuMkDAbz' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- Staging
+-- ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED by 'FnrNSNjLhHay3Aa6LY' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service_worker'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service_worker`@`10.%.%.%`;
 SET DEFAULT ROLE ALL TO `smb_payments_service`@`10.%.%.%`;
 -- smb_payments_service_worker
 CREATE USER IF NOT EXISTS 'smb_payments_service_worker'@'10.%.%.%';
@@ -107,6 +148,11 @@ SET DEFAULT ROLE ALL TO `smb_payments_service_worker`@`10.%.%.%`;
 -- MySQL 8 - smb_notifications_service
 -- production-smb-notifications-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-smb-notifications-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-smb-notifications-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com notifications | mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com notifications
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hproduction-smb-notifications-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com notifications | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com notifications
+
+
 
 -- set up database
 create database if not exists `notifications`;
@@ -121,8 +167,31 @@ ALTER USER 'smb_notifications'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password
 GRANT notifications_service_role TO 'smb_notifications'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `smb_notifications`@`10.%.%.%`;
 -- smb_notifications_worker
-CREATE USER IF NOT EXISTS 'smb_notifications_worker'@'10.%.%.%';
-ALTER USER 'smb_notifications_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*3937C25829592F65E9029B1E40FF46978F14D0F7' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+CREATE USER IF NOT EXISTS 'smb_notifica
+-- set up database
+create database if not exists `smb-invoices-service`;
+
+-- smb_invoices_service roles:
+GRANT SELECT, SHOW VIEW ON `smb-invoices-service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `smb-invoices-service`.* TO `invoices_service_role`@`%`;
+
+-- smb_invoices_service
+CREATE USER IF NOT EXISTS 'smb_invoices_service'@'10.%.%.%';
+-- PRODUCTION
+ALTER USER 'smb_invoices_service'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*D030961757E0DE0DCF082C8695BDE25BB159EFDE' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+--STAGING
+-- ALTER USER 'smb_invoices_service'@'10.%.%.%' IDENTIFIED BY '5QBW8TO18CUCLUM' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT invoices_service_role TO 'smb_invoices_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `smb_invoices_service`@`10.%.%.%`;
+-- smb_invoices_service_worker
+CREATE USER IF NOT EXISTS 'smb_invoices_service_worker'@'10.%.%.%';
+-- PRODUCTION
+ALTER USER 'smb_invoices_service_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*8955ECC34F5AE1D165C91BB8FF09EA6C65CE8716' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- STAGING
+-- ALTER USER 'smb_invoices_service_worker'@'10.%.%.%' IDENTIFIED BY '6ELCWUC09MKVRBV' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+
+GRANT invoices_service_role TO 'smb_invoices_service_worker'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `smb_invoices_service_worker`@`10.%.%.%`;10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*3937C25829592F65E9029B1E40FF46978F14D0F7' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
 GRANT notifications_service_role TO 'smb_notifications_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `smb_notifications_worker`@`10.%.%.%`;
 
@@ -148,9 +217,30 @@ GRANT embedded_service_role TO 'embedded_service_worker'@'10.%.%.%';
 SET DEFAULT ROLE ALL TO `embedded_service_worker`@`10.%.%.%`;
 
 
+-- set up database
+create database if not exists `smb-invoices-service`;
 
-bussdb -e "select CONCAT(\"call mysql.rds_kill(\",ID,\");\") from information_schema.processlist where user like '%service'"
+-- smb_invoices_service roles:
+GRANT SELECT, SHOW VIEW ON `smb-invoices-service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `smb-invoices-service`.* TO `invoices_service_role`@`%`;
 
+-- smb_invoices_service
+CREATE USER IF NOT EXISTS 'smb_invoices_service'@'10.%.%.%';
+-- PRODUCTION
+ALTER USER 'smb_invoices_service'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*D030961757E0DE0DCF082C8695BDE25BB159EFDE' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+--STAGING
+-- ALTER USER 'smb_invoices_service'@'10.%.%.%' IDENTIFIED BY '5QBW8TO18CUCLUM' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT invoices_service_role TO 'smb_invoices_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `smb_invoices_service`@`10.%.%.%`;
+-- smb_invoices_service_worker
+CREATE USER IF NOT EXISTS 'smb_invoices_service_worker'@'10.%.%.%';
+-- PRODUCTION
+ALTER USER 'smb_invoices_service_worker'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*8955ECC34F5AE1D165C91BB8FF09EA6C65CE8716' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- STAGING
+-- ALTER USER 'smb_invoices_service_worker'@'10.%.%.%' IDENTIFIED BY '6ELCWUC09MKVRBV' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+
+GRANT invoices_service_role TO 'smb_invoices_service_worker'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `smb_invoices_service_worker`@`10.%.%.%`;
 bussdb -e "select * from information_schema.processlist where user like '%service'"
 
 bspdb -e "select CONCAT(\"call mysql.rds_kill(\",ID,\");\") from information_schema.processlist where user like '%service'"
@@ -172,12 +262,69 @@ mysqldump --column-statistics=0 --set-gtid-purged=OFF -hpproduction-cashflow-enr
 mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com enrichment_service | mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com enrichment_service
 
 
+
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hproduction-smb-accounting-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-accounting-service | mysql -hproduction-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-accounting-service
+mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-smb-accounting-service-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-accounting-service | mysql -hstaging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com smb-accounting-service
+
+
 -- production-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 -- staging-cashflow-enrichment-api-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
 
 
 
 
+-- set up database
+create database if not exists `embedded_service`;
+CREATE ROLE IF NOT EXISTS `embedded_service_role`;
+
+-- embedded_service roles:
+GRANT SELECT, SHOW VIEW ON `embedded_service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `embedded_service`.* TO `embedded_service_role`@`%`;
+
+-- embedded_service
+CREATE USER IF NOT EXISTS 'embedded_service'@'10.%.%.%';
+ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED by 'n97v7CnaKWymq5vK43' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- Staging
+-- ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED by 'zGC7ytGL28AMwcYyAT' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service`@`10.%.%.%`;
+-- embedded_service_worker
+CREATE USER IF NOT EXISTS 'embedded_service_worker'@'10.%.%.%';
+ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED by 'WoaB4n2RohfuMkDAbz' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- Staging
+-- ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED by 'FnrNSNjLhHay3Aa6LY' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service_worker'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service_worker`@`10.%.%.%`;
+
+
+
+
+
+
+
+
+-- set up database
+create database if not exists `embedded_service`;
+CREATE ROLE IF NOT EXISTS `embedded_service_role`;
+
+-- embedded_service roles:
+GRANT SELECT, SHOW VIEW ON `embedded_service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `embedded_service`.* TO `embedded_service_role`@`%`;
+
+-- embedded_service
+CREATE USER IF NOT EXISTS 'embedded_service'@'10.%.%.%';
+ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED by 'n97v7CnaKWymq5vK43' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- Staging
+-- ALTER USER 'embedded_service'@'10.%.%.%' IDENTIFIED by 'zGC7ytGL28AMwcYyAT' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service`@`10.%.%.%`;
+-- embedded_service_worker
+CREATE USER IF NOT EXISTS 'embedded_service_worker'@'10.%.%.%';
+ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED by 'WoaB4n2RohfuMkDAbz' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- Staging
+-- ALTER USER 'embedded_service_worker'@'10.%.%.%' IDENTIFIED by 'FnrNSNjLhHay3Aa6LY' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT embedded_service_role TO 'embedded_service_worker'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `embedded_service_worker`@`10.%.%.%`;
 
 
 
@@ -190,6 +337,38 @@ mysqldump --column-statistics=0 --set-gtid-purged=OFF -hstaging-cashflow-enrichm
 
 
 
+
+
+
+
+
+
+
+-- set up database
+create database if not exists `smb-accounting-service`;
+CREATE ROLE IF NOT EXISTS `accounting_service_role`;
+
+-- smb_invoices_service roles:
+GRANT SELECT, SHOW VIEW ON `smb-accounting-service`.* TO `developer`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, EXECUTE, SHOW VIEW ON `smb-accounting-service`.* TO `accounting_service_role`@`%`;
+
+-- smb_accounting_service
+CREATE USER IF NOT EXISTS 'smb_accounting_service'@'10.%.%.%';
+-- PRODUCTION
+ALTER USER 'smb_accounting_service'@'10.%.%.%' IDENTIFIED BY '3LT8KJKIZC8DIG0' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+--STAGING
+-- ALTER USER 'smb_accounting_service'@'10.%.%.%' BY '*0B6481B11F4A22DA0F31A8D78779400C63FA9F1C' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT accounting_service_role TO 'smb_accounting_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `smb_accounting_service`@`10.%.%.%`;
+-- smb_accounting_service_worker
+CREATE USER IF NOT EXISTS 'smb_accounting_service_worker'@'10.%.%.%';
+-- PRODUCTION
+ALTER USER 'smb_accounting_service_worker'@'10.%.%.%' IDENTIFIED BY '*49450BC6DB4B619F7C696DB23CE4EB0B351766FA' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+-- STAGING
+-- ALTER USER 'smb_accounting_service'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*DFE486A03F2FC49FCA8515D58A8DA25AB2B24EDD' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+
+GRANT accounting_service_role TO 'smb_accounting_service'@'10.%.%.%';
+SET DEFAULT ROLE ALL TO `smb_accounting_service`@`10.%.%.%`;
 
 
 
@@ -297,6 +476,13 @@ SET DEFAULT ROLE ALL TO `cashflow_enrichment_worker`@`10.%.%.%`;
 
 
 
+
+
+
+
+
+
+
 -- Create Users
 CREATE USER IF NOT EXISTS 'lendio_lake'@'%';
 ALTER USER 'lendio_lake'@'%' IDENTIFIED WITH 'mysql_native_password' AS '*F4E971CB6C1217E863A77584F568076B13F43468' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
@@ -362,3 +548,20 @@ ALTER USER 'sethadamson'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '
 GRANT USAGE ON *.* TO `sethadamson`@`10.%.%.%`;
 GRANT `developer`@`%` TO `sethadamson`@`10.%.%.%`;
 SET DEFAULT ROLE ALL TO `sethadamson`@`10.%.%.%`;
+
+
+CREATE USER IF NOT EXISTS 'koleg'@'10.%.%.%';
+ALTER USER 'koleg'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*1A7ABDB8A0D7195402B2D3E7FC7AECA5459517E9' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT USAGE ON *.* TO `koleg`@`10.%.%.%`;
+GRANT `developer`@`%` TO `koleg`@`10.%.%.%`;
+SET DEFAULT ROLE ALL TO `koleg`@`10.%.%.%`;
+
+
+
+
+
+CREATE USER IF NOT EXISTS 'yivchenko'@'10.%.%.%';
+ALTER USER 'yivchenko'@'10.%.%.%' IDENTIFIED WITH 'mysql_native_password' AS '*3DD20926DDB05E0E09A6A3E5EABAC38E63C60B22' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK;
+GRANT USAGE ON *.* TO `yivchenko`@`10.%.%.%`;
+GRANT `developer`@`%` TO `yivchenko`@`10.%.%.%`;
+SET DEFAULT ROLE ALL TO `yivchenko`@`10.%.%.%`;

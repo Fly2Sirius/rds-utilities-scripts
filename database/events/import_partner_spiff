@@ -8,14 +8,18 @@ CREATE EVENT `optimus`.`import_partner_spiff` ON SCHEDULE EVERY 1 HOUR STARTS '2
     
     truncate table optimus.partnerCommissions;
 
-    LOAD DATA FROM S3  's3://lendio-aurora-snowflake/partner_spiff.csv'
-    IGNORE INTO TABLE optimus.partnerCommissions
+    LOAD DATA FROM S3  's3://lendio-snowflake-exports/Partners_SPIFF_data.csv'
+    IGNORE INTO TABLE optimus.partnerCommissions2
     FIELDS TERMINATED BY ','
+    OPTIONALLY ENCLOSED BY '"'
     LINES TERMINATED BY '\n'
-    (opportunityId, dealid, borrowerId,partnerCommission);
-
+    ignore 1 lines
+    (id,recordType,userName,payoutAmount,statementPeriodStartDate, revenue, payoutRuleName, planName, userExternalId, borrowerId, `name`, currentBorrowerStatus, stage, mineralGroup, phone, street, street2, city, `state`, zip, dateClosed, fundedAmount, acceptedOfferId, `type`, loanProductCategoryType, loanProductLenderId, points, housePoints, buyRate, paymentFrequency,paymentAmount,    factor, term,numPayments,interestRate,offerReceivedAt,offerAcceptedAt,opportunityId,oppStart,oppEnd ,disposition  ,appCompletedAt ,appSent,docPrep ,marketingId)
+    -- (opportunityId, dealid, borrowerId,partnerCommission);
+    ;
 
 END;;
 DELIMITER ;
 
 
+    (id,recordType,userName,payoutAmount,statementPeriodStartDate, revenue, payoutRuleName, planName, userExternalId, borrowerId, `name`, currentBorrowerStatus, stage, mineralGroup, phone, street, street2, city, `state`, zip, dateClosed, fundedAmount, acceptedOfferId, `type`, loanProductCategoryType, loanProductLenderId, points, housePoints, buyRate, paymentFrequency,paymentAmount,    factor, term,numPayments,interestRate,offerReceivedAt,offerAcceptedAt,opportunityId,oppStart,oppEnd ,disposition  ,appCompletedAt ,appSent,docPrep ,marketingId)
