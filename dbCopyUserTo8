@@ -11,19 +11,21 @@ if [ -z ${3} ]; then
         echo "<username> You can use finddbuser to get the username you need"
         echo "<role> [superAdmin, admin,developer]"
         echo "<destination> You can use dbs to find the server name to copy the user to."
+        echo "production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com"
+        echo "staging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com"
         echo ""
 fi
 
 source_server='production.civpyhkigzas.us-east-1.rds.amazonaws.com'
 source_port=3306
 
-sql=`pt-show-grants -hproduction.civpyhkigzas.us-east-1.rds.amazonaws.com | grep $1 | head -n3 `
+sql=`pt-show-grants -hproduction.civpyhkigzas.us-east-1.rds.amazonaws.com | grep $1 | head -n3 | tail -n2 `
 
-if [ ${2} == 'superAdmin' ]; then
+if [ ${2} = 'superAdmin' ]; then
     sql="$sql GRANT \`rds_superuser_role\`@\`%\` TO \`${1}\`@\`10.%.%.%\`;"
-elif [ ${2} == 'admin' ]; then
+elif [ ${2} = 'admin' ]; then
     sql="$sql GRANT \`admin\`@\`%\`,\`developer\`@\`%\` TO \`${1}\`@\`10.%.%.%\`;"
-elif [ ${2} == 'developer' ]; then
+elif [ ${2} = 'developer' ]; then
     sql="$sql GRANT \`developer\`@\`%\` TO \`${1}\`@\`10.%.%.%\`;"
 else
     echo "Invalid <role> must be developer or admin"
