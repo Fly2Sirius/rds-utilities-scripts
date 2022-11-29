@@ -1,5 +1,8 @@
 use optimus;
 
+SET @job_steps = 0;
+call `datateam`.`job_log_start`("Refresh Opportunity Details Summary Table",@job_steps,1,0,0,"Starting Job",@_log_id);
+
 drop table if exists optimus._opportunityDetailsSummary;
 
 create table optimus._opportunityDetailsSummary like optimus.opportunityDetailsSummary;
@@ -101,5 +104,7 @@ rename table optimus._opportunityDetailsSummary to optimus.opportunityDetailsSum
 
 drop table optimus.opportunityDetailsSummaryOld;
 
+call `datateam`.`job_log_update`("status","Complete");
+call `datateam`.`job_log_update`("end",CURRENT_TIMESTAMP);
 
 
