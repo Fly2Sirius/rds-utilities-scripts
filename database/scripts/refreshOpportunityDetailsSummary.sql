@@ -104,7 +104,10 @@ rename table optimus._opportunityDetailsSummary to optimus.opportunityDetailsSum
 
 drop table optimus.opportunityDetailsSummaryOld;
 
+
+call `datateam`.`job_log_update`("errors",@@error_count);
 call `datateam`.`job_log_update`("status","Complete");
 call `datateam`.`job_log_update`("end",CURRENT_TIMESTAMP);
 
 
+# 15 06 * * *  ec2-user /home/ec2-user/partnerSpiff/refreshOpportunityDetailsSummary.sh

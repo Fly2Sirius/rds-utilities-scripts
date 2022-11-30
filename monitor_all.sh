@@ -28,7 +28,7 @@ do
         mysql  --protocol=tcp  --host=$server -P $port -e "select ID,DB,Host,User,Command,Time,State,left(Info,$left) as Query from information_schema.processlist where Command not in ('Binlog Dump','Sleep','Connect','Daemon') and Time > 0 order by time desc limit $limit; set @count = (select count(*) as count from information_schema.processlist where Command not in ('Sleep','Daemon') and Time > 0); " 
         if [[ $server_label == "production" ]]; then
             echo -e "\e[1m\e[31m"  | tr -d '\n'
-            mysql  --protocol=tcp  --host=$server -P $port -e "select user,count(1) as Count from information_schema.processlist where user not in ('greedo','kdavey','event_scheduler','rdsadmin','unauthenticated user','lendio_lake') group by user limit 10";
+            mysql  --protocol=tcp  --host=$server -P $port -e "select id,user,count(1) as Count from information_schema.processlist where user not in ('greedo','kdavey','event_scheduler','rdsadmin','unauthenticated user','lendio_lake') group by user limit 10";
             # Show counts of loaded borrower Assignments
             echo -e "\e[1m\e[33m"
             mysql  --protocol=tcp  --host=$server -P $port -e "select bab.bulkAssignmentid,bab.status,count(1) as Reassignmnets from optimus.bulkAssignmentBorrowers bab join optimus.bulkAssignments ba on bab.bulkAssignmentId = ba.id where bab.created > DATE_SUB(NOW(), INTERVAL 2 HOUR) and ba.deleted is NULL group by bab.status,bab.bulkAssignmentid order by bab.bulkAssignmentid;"
