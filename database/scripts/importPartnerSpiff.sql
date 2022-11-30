@@ -13,3 +13,6 @@ ignore 1 lines
 
 call `datateam`.`job_log_update`("status","Complete");
 call `datateam`.`job_log_update`("end",CURRENT_TIMESTAMP);
+
+
+# 15 * * * *  ec2-user /home/ec2-user/partnerSpiff/importPartnerSpiff.sh

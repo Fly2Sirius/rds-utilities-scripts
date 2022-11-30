@@ -123,7 +123,7 @@ proc_Exit:BEGIN
 END;;
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS `datateam`.`job_log_steps_start`;
+DROP PROCEDURE IF EXISTS `datateam`.`job_log_steps_update`;
 
 DELIMITER ;;
 CREATE PROCEDURE `datateam`.`job_log_steps_update`(inColumn varchar(30),inColumnValue varchar(30))
