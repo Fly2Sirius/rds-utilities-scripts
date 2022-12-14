@@ -15,24 +15,31 @@ else:
     print("You must supply a username: createUser username")
     sys.exit()
 
-mysql_host = "production.civpyhkigzas.us-east-1.rds.amazonaws.com"
+instance_list = f.get_instance_addresses_by_tag('createProductionUser', '1')
 new_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
-mysql_user, mysql_password = f.get_mysql_credentials()
-connection = f.create_connection(mysql_host, mysql_user, mysql_password, 3306, "mysql")
-
-try:
-    with open("config/.createUser.sql", "r") as file_object:
-        command = ""
-        for line in file_object:
-            command = line.replace("USERNAME", username)
-            command = command.replace("PASSWORD_STRING", new_password)
-            f.run_mysql_command(connection, command)
-
-except:
-    if file_object.closed == False:
-        print("File is not closed")
+for mysql_host in instance_list:
+    
+    #mysql_host = "production.civpyhkigzas.us-east-1.rds.amazonaws.com"
+    if (mysql_host == "production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com"):
+        print("Copying User to Services")
+        print("dbCopyUserTo8 ",username," developer production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com")
     else:
-        print("File is closed")
+        print("Creating account on ",mysql_host)
+        mysql_user, mysql_password = f.get_mysql_credentials()
+        connection = f.create_connection(mysql_host, mysql_user, mysql_password, 3306, "mysql")
+        try:
+            with open("config/.createUser.sql", "r") as file_object:
+                command = ""
+                for line in file_object:
+                    command = line.replace("USERNAME", username)
+                    command = command.replace("PASSWORD_STRING", new_password)
+                    f.run_mysql_command(connection, command)
+        except:
+            if file_object.closed == False:
+                print("File is not closed")
+            else:
+                print("File is closed")
+
 print(username)
 print("User: ", username)
 print("Password: ", new_password)

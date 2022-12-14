@@ -2,12 +2,38 @@ from pathlib import Path
 import requests
 import json
 import os
+import boto3
 import sys
 from configparser import ConfigParser
 import mysql.connector
 from mysql.connector import Error
 import colorama
 from colorama import Fore
+
+
+def get_rds_object():
+    rds = boto3.client('rds')
+    return rds
+
+def get_rds_descriptions():
+    rds = get_rds_object()
+    describe_response = rds.describe_db_instances()
+    return describe_response
+
+def get_instance_addresses_by_tag(tagKey, tagValue):
+    rds = get_rds_object()
+    instances = []
+    describe_response = get_rds_descriptions()
+    for instance in describe_response["DBInstances"]:
+            tags = rds.list_tags_for_resource(ResourceName=instance["DBInstanceArn"])
+            # print(tags)   
+            for tag in tags["TagList"]:
+                if tag['Key'] == tagKey:
+                    if tag['Value'] == tagValue:
+                        instances.append(instance["Endpoint"]["Address"])
+                        pass
+                    pass
+    return instances
 
 
 def get_mysql_credentials():
