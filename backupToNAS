@@ -1,0 +1,4 @@
+nas
+file="Lendio_Home_Backup_"$( date '+%Y-%m-%d_%H-%M-%S' )
+cd /home
+tar --exclude={'kdavey/Music','kdavey/.cache','kdavey/.local','kdavey/.var','kdavey/.mozilla','kdavey/MakeMKV/output/'} -zcvf - kdavey /usr/local/bin | gpg --encrypt --recipient schnappi@mailbeaver.net > /mnt/NAS/Backups/$file
