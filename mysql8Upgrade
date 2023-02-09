@@ -1,0 +1,144 @@
+#!/bin/bash
+start=`date +%s`
+
+
+e="stage"
+
+if [ "$e" == "prod" ]; then
+
+    source_cluster="production-cluster-1"
+    source_instance="production"
+    snapshot_name="mysql8UpgradeSnaphot-Production"
+    target_cluster="production-cluster-18"
+    target_instance="production8"
+    target_reader1_instance="reader-bi8"
+    target_reader2_instance="reader-primary8"
+    engine_version="8.0.mysql_aurora.3.02.2"
+    db_subnet_group_name="default-vpc-0d4bd66cbd5a11024"
+    vpc_security_group_ids="sg-0085f88106776d870"
+    db_cluster_parameter_group_name="aurora-8-0-cluster-param-group"
+    db_instance_parameter_group_name="aurora-8-0-param-group"
+    db_cluster_instance_class="db.r6g.8xlarge" 
+
+elif [ $e = "stage" ]; then
+
+    source_cluster="staging-corp"
+    source_instance="staging-corp-instance-1"
+    snapshot_name="mysql8UpgradeSnaphot-Staging"
+    target_cluster="staging-cluster8"
+    target_instance="staging-corp8"
+    target_reader1_instance="staging-corp-reader8"
+    engine_version="8.0.mysql_aurora.3.02.2"
+    db_subnet_group_name="default-vpc-0d4bd66cbd5a11024"
+    vpc_security_group_ids="sg-05550332f2241ba87"
+    db_cluster_parameter_group_name="aurora-8-0-cluster-param-group"
+    db_instance_parameter_group_name="aurora-8-0-param-group"
+    db_cluster_instance_class=" db.r6g.large" 
+
+else
+
+    echo "No environment has been selected."
+
+fi
+
+echo "Creating snapshot of $source_cluster"
+aws rds create-db-cluster-snapshot --db-cluster-identifier $source_cluster --db-cluster-snapshot-identifier $snapshot_name
+
+echo ""
+while [[ $result != "available" ]]; do
+    echo -e "\r\033[1A\033[0KStill creating snapshot... $result $i"
+    sleep 60
+    result=`aws rds describe-db-cluster-snapshots --db-cluster-snapshot-identifier $snapshot_name  --query "DBClusterSnapshots[*].Status" --output text`
+    i=$((i+1))
+done
+
+echo "Restoring snapshot $source_cluster to $target_cluster"
+
+
+aws rds restore-db-cluster-from-snapshot \
+--db-cluster-identifier $target_cluster \
+--snapshot-identifier $snapshot_name \
+--engine aurora-mysql \
+--engine-mode provisioned \
+--deletion-protection \
+--no-publicly-accessible \
+--enable-cloudwatch-logs-exports "audit" "slowquery" "error" \
+--engine-version $engine_version \
+--db-subnet-group-name $db_subnet_group_name \
+--vpc-security-group-ids $vpc_security_group_ids \
+--db-cluster-parameter-group-name $db_cluster_parameter_group_name \
+--db-cluster-instance-class $db_cluster_instance_class  > /dev/null 
+
+
+echo ""
+while [[ $result != "available" ]]; do
+    echo -e "\r\033[1A\033[0KStill building cluster... $result $i"
+    sleep 60
+    result=`aws rds describe-db-clusters --db-cluster-identifier $target_cluster --query "DBClusters[*].Status" --output text`
+    i=$((i+1))
+done
+
+echo "Creating Instance Writer... "
+echo ""
+
+aws rds create-db-instance \
+    --db-instance-identifier  $target_instance \
+    --db-cluster-identifier $target_cluster \
+    --engine aurora-mysql  \
+    --no-publicly-accessible \
+    --db-instance-class db.r5.large > /dev/null 
+
+
+while [[ $result1 != "available" ]]; do
+    echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
+    sleep 60
+    result1=`aws rds describe-db-instances --db-instance-identifier $target_instance --query "DBInstances[*].DBInstanceStatus" --output text`
+    #aws rds describe-db-instances --db-instance-identifier $target_instance --query "DBInstances[*].DBInstanceStatus" --output text
+    j=$((j+1))
+done
+
+echo "Creating Instance Reader... "
+echo ""
+
+aws rds create-db-instance-read-replica 
+--db-instance-identifier $target_instance 
+--source-db-instance-identifier $target_reader1_instance > /dev/null 
+
+while [[ $result1 != "available" ]]; do
+    echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
+    sleep 60
+    result1=`aws rds describe-db-instances --db-instance-identifier $target_reader1_instance --query "DBInstances[*].DBInstanceStatus" --output text`
+    #aws rds describe-db-instances --db-instance-identifier $target_instance --query "DBInstances[*].DBInstanceStatus" --output text
+    j=$((j+1))
+done
+
+
+
+if [ -n "$target_reader2_instance" ];then
+
+    echo "Creating Instance Secondary Reader... "
+    echo ""
+
+    aws rds create-db-instance-read-replica 
+    --db-instance-identifier $target_instance 
+    --source-db-instance-identifier $target_reader2_instance > /dev/null 
+
+    while [[ $result1 != "available" ]]; do
+    echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
+    sleep 60
+    result1=`aws rds describe-db-instances --db-instance-identifier $target_reader2_instance --query "DBInstances[*].DBInstanceStatus" --output text`
+    #aws rds describe-db-instances --db-instance-identifier $target_instance --query "DBInstances[*].DBInstanceStatus" --output text
+    j=$((j+1))
+
+done
+
+
+fi 
+
+
+printf "%b\n" "\033[96mInstance Created!!!"
+
+
+end=`date +%s`
+
+runtime=$((end-start))
