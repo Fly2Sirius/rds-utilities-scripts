@@ -19,6 +19,7 @@ if [ "$e" == "prod" ]; then
     db_cluster_parameter_group_name="aurora-8-0-cluster-param-group"
     db_instance_parameter_group_name="aurora-8-0-param-group"
     db_cluster_instance_class="db.r6g.8xlarge" 
+    scaling_policy_name="Production_Autoscaling_Policy8"
 
 elif [ $e = "stage" ]; then
 
@@ -29,11 +30,12 @@ elif [ $e = "stage" ]; then
     target_instance="staging-corp8"
     target_reader1_instance="staging-corp-reader8"
     engine_version="8.0.mysql_aurora.3.02.2"
-    db_subnet_group_name="default-vpc-0d4bd66cbd5a11024"
+    db_subnet_group_name="default-vpc-0ace8a1c8c8342182"
     vpc_security_group_ids="sg-05550332f2241ba87"
     db_cluster_parameter_group_name="aurora-8-0-cluster-param-group"
     db_instance_parameter_group_name="aurora-8-0-param-group"
     db_cluster_instance_class=" db.r6g.large" 
+    scaling_policy_name="Staging_Autoscaling_Policy8"
 
 else
 
@@ -41,17 +43,18 @@ else
 
 fi
 
-echo "Creating snapshot of $source_cluster"
-aws rds create-db-cluster-snapshot --db-cluster-identifier $source_cluster --db-cluster-snapshot-identifier $snapshot_name
+# echo "Creating snapshot of $source_cluster"
+# aws rds create-db-cluster-snapshot --db-cluster-identifier $source_cluster --db-cluster-snapshot-identifier $snapshot_name > /dev/null
 
-echo ""
-while [[ $result != "available" ]]; do
-    echo -e "\r\033[1A\033[0KStill creating snapshot... $result $i"
-    sleep 60
-    result=`aws rds describe-db-cluster-snapshots --db-cluster-snapshot-identifier $snapshot_name  --query "DBClusterSnapshots[*].Status" --output text`
-    i=$((i+1))
-done
+# echo ""
+# while [[ $result != "available" ]]; do
+#     echo -e "\r\033[1A\033[0KStill creating snapshot... $result $i"
+#     sleep 60
+#     result=`aws rds describe-db-cluster-snapshots --db-cluster-snapshot-identifier $snapshot_name  --query "DBClusterSnapshots[*].Status" --output text`
+#     i=$((i+1))
+# done
 
+# printf "%b\n" "\033[96mSnapshot Created!!!"scaling_policy_name="Production_Autoscaling_Policy8"
 echo "Restoring snapshot $source_cluster to $target_cluster"
 
 
@@ -77,7 +80,8 @@ while [[ $result != "available" ]]; do
     result=`aws rds describe-db-clusters --db-cluster-identifier $target_cluster --query "DBClusters[*].Status" --output text`
     i=$((i+1))
 done
-
+printf "%b\n" "\033[96mCluster Created!!!"
+echo " "
 echo "Creating Instance Writer... "
 echo ""
 
@@ -100,9 +104,12 @@ done
 echo "Creating Instance Reader... "
 echo ""
 
-aws rds create-db-instance-read-replica 
---db-instance-identifier $target_instance 
---source-db-instance-identifier $target_reader1_instance > /dev/null 
+aws rds create-db-instance \
+    --db-instance-identifier  $target_reader1_instance \
+    --db-cluster-identifier $target_cluster \
+    --engine aurora-mysql  \
+    --no-publicly-accessible \
+    --db-instance-class db.r5.large > /dev/null 
 
 while [[ $result1 != "available" ]]; do
     echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
@@ -112,16 +119,17 @@ while [[ $result1 != "available" ]]; do
     j=$((j+1))
 done
 
-
-
 if [ -n "$target_reader2_instance" ];then
 
     echo "Creating Instance Secondary Reader... "
     echo ""
 
-    aws rds create-db-instance-read-replica 
-    --db-instance-identifier $target_instance 
-    --source-db-instance-identifier $target_reader2_instance > /dev/null 
+aws rds create-db-instance \
+    --db-instance-identifier  $target_reader2_instance \
+    --db-cluster-identifier $target_cluster \
+    --engine aurora-mysql  \
+    --no-publicly-accessible \
+    --db-instance-class db.r5.large > /dev/null 
 
     while [[ $result1 != "available" ]]; do
     echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
@@ -130,15 +138,44 @@ if [ -n "$target_reader2_instance" ];then
     #aws rds describe-db-instances --db-instance-identifier $target_instance --query "DBInstances[*].DBInstanceStatus" --output text
     j=$((j+1))
 
-done
-
+    done
 
 fi 
 
-
 printf "%b\n" "\033[96mInstance Created!!!"
 
+# if [ "$e" == "prod" ]; then
 
-end=`date +%s`
+    # Register cluster for Autoscaling
+    aws application-autoscaling register-scalable-target \
+    --service-namespace rds \
+    --resource-id cluster:$target_cluster \
+    --scalable-dimension rds:cluster:ReadReplicaCount \
+    --min-capacity 2 \
+    --max-capacity 10 \
 
-runtime=$((end-start))
+    aws application-autoscaling put-scaling-policy \
+    --policy-name $scaling_policy_name \
+    --policy-type TargetTrackingScaling \
+    --resource-id cluster:$target_cluster \
+    --service-namespace rds \
+    --scalable-dimension rds:cluster:ReadReplicaCount \
+    --target-tracking-scaling-policy-configuration file://config/upgradeTo8.json
+
+# fi
+
+aws rds create-db-cluster-endpoint \
+    --db-cluster-endpoint-identifier reader-primary8 \
+    --endpoint-type reader \
+    --db-cluster-identifier $target_cluster \
+    --static-members $target_instance $target_reader1_instance  
+
+
+
+# aws rds create-db-cluster-endpoint \
+#     --db-cluster-endpoint-identifier reader-primary8 \
+#     --endpoint-type reader \
+#     --db-cluster-identifier staging-cluster8 \
+#     --excluded-members staging-corp8
+
+

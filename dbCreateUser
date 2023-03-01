@@ -15,11 +15,12 @@ else:
     print("You must supply a username: createUser username")
     sys.exit()
 
-instance_list = f.get_instance_addresses_by_tag('createProductionUser', '1')
+#instance_list = f.get_instance_addresses_by_tag('createProductionUser', '1')
+instance_list = f.get_instance_addresses_by_tag('createProductionUserAdesso', '1')
+
 new_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
 for mysql_host in instance_list:
     
-    #mysql_host = "production.civpyhkigzas.us-east-1.rds.amazonaws.com"
     if (mysql_host == "production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com"):
         print("Copying User to Services")
         print("dbCopyUserTo8 ",username," developer production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com")

@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+import sys
+import string
+import random
+import mysql.connector
+from mysql.connector import Error
+from configparser import ConfigParser
+from pathlib import Path
+import os
+import funcs as f
+
+if len(sys.argv) > 1:
+    username = sys.argv[1]
+else:
+    print("You must supply a username: createUser username")
+    sys.exit()
+
+instance_list = f.get_instance_addresses_by_tag('writer', 'true')
+new_password = "".join(random.choices(string.ascii_uppercase + string.digits, k=15))
+for mysql_host in instance_list:
+    
+    #mysql_host = "production.civpyhkigzas.us-east-1.rds.amazonaws.com"
+    print(mysql_host)
+
+# print(username)
+# print("User: ", username)
+# print("Password: ", new_password)
+# print("Host : reader-bi.civpyhkigzas.us-east-1.rds.amazonaws.com")

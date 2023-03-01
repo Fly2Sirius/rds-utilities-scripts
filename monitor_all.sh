@@ -36,22 +36,23 @@ do
             echo -e "\e[1m\e[33m"
             mysql  --protocol=tcp  --host=$server -P $port -e "select bab.bulkAssignmentid,bab.status,count(1) as Reassignmnets from optimus.bulkAssignmentBorrowers bab join optimus.bulkAssignments ba on bab.bulkAssignmentId = ba.id where bab.created > DATE_SUB(NOW(), INTERVAL 2 HOUR) and ba.deleted is NULL group by bab.status,bab.bulkAssignmentid order by bab.bulkAssignmentid;"
             echo -e "\e[1m\e["$c"m" | tr -d '\n'
+                    mysql  --protocol=tcp  --host=$server -P $port -e "SELECT
+        concat('CALL mysql.rds_kill(',b.trx_mysql_thread_id,');') as Commands,
+        count(1) as count
+        FROM information_schema.innodb_lock_waits w
+        INNER JOIN information_schema.innodb_trx b
+        ON b.trx_id = w.blocking_trx_id
+        INNER JOIN information_schema.innodb_trx r
+        ON r.trx_id = w.requesting_trx_id
+        where b.trx_query is NULL
+        group by b.trx_mysql_thread_id 
+        having count(1) > 3
+        order by count(1) desc; select substring_index(host, ':', 1) as IP , count(*) from information_schema.processlist group by substring_index(host, ':', 1);" 
+    
         fi
 
         #Show logins from IP Addresses
-        # mysql  --protocol=tcp  --host=$server -P $port -e "SELECT
-        # concat('CALL mysql.rds_kill(',b.trx_mysql_thread_id,');') as Commands,
-        # count(1) as count
-        # FROM information_schema.innodb_lock_waits w
-        # INNER JOIN information_schema.innodb_trx b
-        # ON b.trx_id = w.blocking_trx_id
-        # INNER JOIN information_schema.innodb_trx r
-        # ON r.trx_id = w.requesting_trx_id
-        # where b.trx_query is NULL
-        # group by b.trx_mysql_thread_id 
-        # having count(1) > 3
-        # order by count(1) desc; select substring_index(host, ':', 1) as IP , count(*) from information_schema.processlist group by substring_index(host, ':', 1);" 
-    
+
     done
     sleep 2;
 done

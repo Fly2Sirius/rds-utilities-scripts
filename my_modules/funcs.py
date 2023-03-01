@@ -24,7 +24,7 @@ def get_instance_addresses_by_tag(tagKey, tagValue):
     rds = get_rds_object()
     instances = []
     describe_response = get_rds_descriptions()
-    print(describe_response)
+    #print(describe_response)
     for instance in describe_response["DBInstances"]:
             tags = rds.list_tags_for_resource(ResourceName=instance["DBInstanceArn"])
             #print(tags)   
