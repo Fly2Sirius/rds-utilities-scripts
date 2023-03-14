@@ -11,9 +11,16 @@ SET @timestamp = (select unix_timestamp(CURRENT_TIMESTAMP));
 drop temporary table if exists datateam._borrowerMatchIds;
 
 create temporary table datateam._borrowerMatchIds as       
-SELECT distinct borrowerId
-FROM optimus.borrowerMatches
-WHERE created > DATE_SUB(NOW(), INTERVAL '1' HOUR);
+select distinct(borrowerId) from (
+select borrowerId FROM optimus.borrowerMatchesClassifications
+WHERE created > DATE_SUB(NOW(), INTERVAL '1' HOUR)
+union
+select borrowerId FROM optimus.borrowerMatchesLoanProducts
+WHERE created > DATE_SUB(NOW(), INTERVAL '1' HOUR)
+union
+select borrowerId FROM optimus.borrowerMatchesLoanProductCategories 
+WHERE created > DATE_SUB(NOW(), INTERVAL '1' HOUR)
+)x;
 
 drop table if exists datateam.borrowerClassifications;
 
