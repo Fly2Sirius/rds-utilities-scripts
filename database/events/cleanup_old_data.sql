@@ -6,5 +6,6 @@ CREATE EVENT `datateam`.`cleanup_old_data` ON SCHEDULE EVERY 1 DAY STARTS '2023-
 BEGIN
     CALL datateam.clear_data_syncronizations(10);
     CALL datateam.clear_event_webhooks(10);
+    CALL datateam.clear_jobs(10);
 END;;
 DELIMITER ;

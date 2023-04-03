@@ -28,7 +28,7 @@ elif [ $e = "stage" ]; then
     target_cluster="staging-cluster8"
     target_instance="staging-corp8"
     target_reader1_instance="staging-corp-reader8"
-    engine_version="8.0.mysql_aurora.3.02.2"
+    
     db_subnet_group_name="default-vpc-0ace8a1c8c8342182"
     vpc_security_group_ids="sg-05550332f2241ba87"
     db_cluster_parameter_group_name="aurora-8-0-cluster-param-group"
@@ -42,18 +42,18 @@ else
 
 fi
 
-# echo "Creating snapshot of $source_cluster"
-# aws rds create-db-cluster-snapshot --db-cluster-identifier $source_cluster --db-cluster-snapshot-identifier $snapshot_name > /dev/null
+echo "Creating snapshot of $source_cluster"
+aws rds create-db-cluster-snapshot --db-cluster-identifier $source_cluster --db-cluster-snapshot-identifier $snapshot_name > /dev/null
 
-# echo ""
-# while [[ $result != "available" ]]; do
-#     echo -e "\r\033[1A\033[0KStill creating snapshot... $result $i"
-#     sleep 60
-#     result=`aws rds describe-db-cluster-snapshots --db-cluster-snapshot-identifier $snapshot_name  --query "DBClusterSnapshots[*].Status" --output text`
-#     i=$((i+1))
-# done
+echo ""
+while [[ $result != "available" ]]; do
+    echo -e "\r\033[1A\033[0KStill creating snapshot... $result $i"
+    sleep 60
+    result=`aws rds describe-db-cluster-snapshots --db-cluster-snapshot-identifier $snapshot_name  --query "DBClusterSnapshots[*].Status" --output text`
+    i=$((i+1))
+done
 
-# printf "%b\n" "\033[96mSnapshot Created!!!"scaling_policy_name="Production_Autoscaling_Policy8"
+printf "%b\n" "\033[96mSnapshot Created!!!"scaling_policy_name="Production_Autoscaling_Policy8"
 echo "Restoring snapshot $source_cluster to $target_cluster"
 
 
