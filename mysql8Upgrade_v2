@@ -7,11 +7,22 @@ if [ "$e" == "prod" ]; then
 
     source_cluster="production-cluster-1"
     source_instance="production"
+    source_instance_reader1="reader-primary"
+    source_instance_reader2="reader-bi"
+    #source_cluster_orig="production-cluster-1-orig"
+    source_cluster_orig=$source_cluster
+    source_instance_orig="production-orig"
+    source_instance_reader1_orig="reader-primary-orig"
+    source_instance_reader2_orig="reader-bi-orig"
     snapshot_name="mysql8UpgradeSnaphot-Production"
-    target_cluster="production-cluster-18"
-    target_instance="production8"
-    target_reader1_instance="reader-bi8"
-    target_reader2_instance="reader-primary8"
+    # target_cluster=$source_cluster
+    # target_instance=$source_instance
+    # target_reader1_instance=$source_instance_reader1
+    # target_reader2_instance=$source_instance_reader2
+    target_cluster="production-cluster-8"
+    target_instance="production-instance-writer"
+    target_reader1_instance="production-instance-reader1"
+    target_reader2_instance="production-instance-reader2"
     db_subnet_group_name="default-vpc-0d4bd66cbd5a11024"
     vpc_security_group_ids="sg-0085f88106776d870"
     db_cluster_parameter_group_name="aurora-8-0-cluster-param-group"
@@ -21,18 +32,18 @@ if [ "$e" == "prod" ]; then
 
 elif [ $e == "stage" ]; then
 
-    # source_cluster="staging-corp"
-    # source_instance="staging-corp-instance-1"
-    # source_instance_reader1="staging-corp-instance-1-us-east-1b"
-    source_cluster="staging-cluster8"
-    source_instance="staging-corp8"
-    source_instance_reader1="staging-corp-reader8"
-    # source_cluster_orig="staging-corp-original"
-    # source_instance_orig="staging-corp-instance-1-original"
-    # source_instance_reader1_orig="staging-corp-instance-1-us-east-1b-orig"
-    source_cluster_orig="staging-cluster8-orig"
-    source_instance_orig="staging-corp8-orig"
-    source_instance_reader1_orig="staging-corp-reader8-orig"
+    source_cluster="staging-corp"
+    source_instance="staging-corp-instance-1"
+    source_instance_reader1="staging-corp-instance-1-us-east-1b"
+    # source_cluster="staging-cluster8"
+    # source_instance="staging-corp8"
+    # source_instance_reader1="staging-corp-reader8"
+    source_cluster_orig="staging-corp-original"
+    source_instance_orig="staging-corp-instance-1-original"
+    source_instance_reader1_orig="staging-corp-instance-1-us-east-1b-orig"
+    # source_cluster_orig="staging-cluster8-orig"
+    # source_instance_orig="staging-corp8-orig"
+    # source_instance_reader1_orig="staging-corp-reader8-orig"
     snapshot_name="mysql8UpgradeSnaphot-Staging"
     target_cluster=$source_cluster
     target_instance=$source_instance
@@ -41,7 +52,7 @@ elif [ $e == "stage" ]; then
     vpc_security_group_ids="sg-05550332f2241ba87"
     db_cluster_parameter_group_name="aurora-8-0-cluster-param-group"
     db_instance_parameter_group_name="aurora-8-0-param-group"
-    db_cluster_instance_class=" db.r6g.large" 
+    db_cluster_instance_class="db.r6g.large" 
 
 else
 
@@ -51,65 +62,79 @@ fi
 
 engine_version="8.0.mysql_aurora.3.02.2"
 
-echo "Renaming Original Cluster and Instances..."
+echo "Renaming $source_cluster to $source_cluster_orig..."
 
-aws rds modify-db-cluster \
-    --db-cluster-identifier $source_cluster \
-    --new-db-cluster-identifier $source_cluster_orig \
-    --port 3366 \
-    --apply-immediately  > /dev/null 
+# aws rds modify-db-cluster \
+#     --db-cluster-identifier $source_cluster \
+#     --new-db-cluster-identifier $source_cluster_orig \
+#     --port 3366 \
+#     --apply-immediately  > /dev/null 
 
-
-aws rds modify-db-instance \
-    --db-instance-identifier $source_instance \
-    --new-db-instance-identifier $source_instance_orig \
-    --apply-immediately  > /dev/null 
-    
-
-aws rds modify-db-instance \
-    --db-instance-identifier  $source_instance_reader1 \
-    --new-db-instance-identifier $source_instance_reader1_orig \
-    --apply-immediately  > /dev/null 
-    
-
-# if [ -n "$target_reader2_instance" ];then
-
-#     echo "Renaming Instance Secondary Reader... "
-#     echo ""
+echo "Renaming $source_instance to $source_instance_orig..."
 
 # aws rds modify-db-instance \
-#     --db-instance-identifier  $source_instance_reader2 \
-#     --new-db-instance-identifier $source_instance_reader2_orig \
-#     --apply-immediately > /dev/null 
+#     --db-instance-identifier $source_instance \
+#     --new-db-instance-identifier $source_instance_orig \
+#     --apply-immediately  > /dev/null 
 
-#     while [[ $result1 != "available" ]]; do
-#     echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
-#     sleep 60
-#     result1=`aws rds describe-db-instances --db-instance-identifier $target_reader2_instance --query "DBInstances[*].DBInstanceStatus" --output text`
+echo "Renaming $source_instance_reader1 to $source_instance_reader1_orig..."
+
+# aws rds modify-db-instance \
+#     --db-instance-identifier  $source_instance_reader1 \
+#     --new-db-instance-identifier $source_instance_reader1_orig \
+#     --apply-immediately  > /dev/null 
+    
+
+# # if [ -n "$target_reader2_instance" ];then
+
+echo "Renaming $source_instance_reader2 to $source_instance_reader2_orig..."
+
+# #     echo "Renaming Instance Secondary Reader... "
+# #     echo ""
+
+# # aws rds modify-db-instance \
+# #     --db-instance-identifier  $source_instance_reader2 \
+# #     --new-db-instance-identifier $source_instance_reader2_orig \
+# #     --apply-immediately > /dev/null 
+
+# #     while [[ $result1 != "available" ]]; do
+# #     echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
+# #     sleep 60
+# #     result1=`aws rds describe-db-instances --db-instance-identifier $target_reader2_instance --query "DBInstances[*].DBInstanceStatus" --output text`
+# #     #aws rds describe-db-instances --db-instance-identifier $target_instance --query "DBInstances[*].DBInstanceStatus" --output text
+# #     j=$((j+1))
+
+# #     done
+
+# # fi 
+
+# sleep 120;
+
+# echo ""
+# while [[ $result != "available" ]]; do
+#     echo -e "\r\033[1A\033[0KRenaming cluster... $source_cluster to $source_cluster_orig $result $i"
+#     sleep 30
+#     result=`aws rds describe-db-clusters --db-cluster-identifier $source_cluster_orig --query "DBClusters[*].Status" --output text`
+#     i=$((i+1))
+# done
+# printf "%b\n" "\033[96mCluster Renamed!!!"
+
+# while [[ $result1 != "available" ]]; do
+#     echo -e "\r\033[1A\033[0KStill renaming instance... $result1 $j"
+#     sleep 30
+#     result1=`aws rds describe-db-instances --db-instance-identifier $source_instance_reader2_orig --query "DBInstances[*].DBInstanceStatus" --output text`
 #     #aws rds describe-db-instances --db-instance-identifier $target_instance --query "DBInstances[*].DBInstanceStatus" --output text
 #     j=$((j+1))
+# done
 
-#     done
-
+# read -p "Verify all instance have been renamed and have 0 user connections... (y/n)? " a 
+# if [ "$a" != "y" ]; then
+#     exit
 # fi 
-
-echo ""
-while [[ $result != "available" ]]; do
-    echo -e "\r\033[1A\033[0KRenaming cluster... $result $i"
-    sleep 30
-    result=`aws rds describe-db-clusters --db-cluster-identifier $target_cluster_orig --query "DBClusters[*].Status" --output text`
-    i=$((i+1))
-done
-printf "%b\n" "\033[96mCluster Renamed!!!"
-
-
-read -p "Verify all instance have been renamed and have 0 user connections... (y/n)? " a 
-if [ "$a" != "y" ]; then
-    exit
-fi 
 
 echo "Creating snapshot of $source_cluster_orig"
 aws rds create-db-cluster-snapshot --db-cluster-identifier $source_cluster_orig --db-cluster-snapshot-identifier $snapshot_name > /dev/null
+
 
 echo ""
 while [[ $result != "available" ]]; do
@@ -118,6 +143,7 @@ while [[ $result != "available" ]]; do
     result=`aws rds describe-db-cluster-snapshots --db-cluster-snapshot-identifier $snapshot_name  --query "DBClusterSnapshots[*].Status" --output text`
     i=$((i+1))
 done
+
 
 echo "Restoring snapshot $snapshot_name to $target_cluster"
 
@@ -153,7 +179,7 @@ aws rds create-db-instance \
     --db-cluster-identifier $target_cluster \
     --engine aurora-mysql  \
     --no-publicly-accessible \
-    --db-instance-class db.r5.large > /dev/null 
+    --db-instance-class $db_cluster_instance_class > /dev/null 
 
 
 while [[ $result1 != "available" ]]; do
@@ -172,7 +198,7 @@ aws rds create-db-instance \
     --db-cluster-identifier $target_cluster \
     --engine aurora-mysql  \
     --no-publicly-accessible \
-    --db-instance-class db.r5.large > /dev/null 
+    --db-instance-class $db_cluster_instance_class > /dev/null 
 
 while [[ $result1 != "available" ]]; do
     echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
@@ -192,7 +218,7 @@ aws rds create-db-instance \
     --db-cluster-identifier $target_cluster \
     --engine aurora-mysql  \
     --no-publicly-accessible \
-    --db-instance-class db.r5.large > /dev/null 
+    --db-instance-class $db_cluster_instance_class > /dev/null 
 
     while [[ $result1 != "available" ]]; do
     echo -e "\r\033[1A\033[0KStill building instance... $result1 $j"
@@ -226,13 +252,108 @@ printf "%b\n" "\033[96mInstance Created!!!"
     --scalable-dimension rds:cluster:ReadReplicaCount \
     --target-tracking-scaling-policy-configuration file://config/upgradeTo8.json
 
-# fi
-
-
-# aws rds create-db-cluster-endpoint \
-#     --db-cluster-endpoint-identifier reader-primary8 \
+    source_cluster="production-cluster-1"
+    source_instance="production"
+    source_instance_reader1="reader-primary"
+    source_instance_reader2="reader-bi"
 #     --endpoint-type reader \
 #     --db-cluster-identifier staging-cluster8 \
 #     --excluded-members staging-corp8
 
 
+
+aws rds modify-db-cluster \
+    --db-cluster-identifier staging-corp \
+     --port 3306 \
+     --apply-immediately  > /dev/null 
+
+
+
+aws rds modify-db-instance \
+    --db-instance-identifier staging-corp-instance-1 \
+    --db-instance-class db.r6g.large \
+    --apply-immediately  > /dev/null 
+    
+
+aws rds modify-db-instance \
+    --db-instance-identifier  staging-corp-instance-1-us-east-1b \
+    --db-instance-class db.r6g.large \
+    --apply-immediately  > /dev/null 
+
+
+
+
+
+
+
+
+
+
+
+
+  source_cluster="production-cluster-1"
+    source_instance="production"
+    source_instance_reader1="reader-primary"
+    source_instance_reader2="reader-bi"
+
+
+
+
+
+
+
+
+
+
+
+aws rds modify-db-cluster \
+    --db-cluster-identifier staging-corp-orig \
+    --new-db-cluster-identifier staging-corp \
+    --port 3306 \
+    --apply-immediately  > /dev/null 
+
+
+aws rds modify-db-instance \
+    --db-instance-identifier staging-corp-instance-1-orig \
+    --new-db-instance-identifier staging-corp-instance-1 \
+    --apply-immediately  > /dev/null 
+    
+
+aws rds modify-db-instance \
+    --db-instance-identifier  staging-corp-instance-1-us-east-1b-orig \
+    --new-db-instance-identifier staging-corp-instance-1-us-east-1b \
+    --apply-immediately  > /dev/null 
+
+
+
+
+
+aws rds modify-db-cluster \
+    --db-cluster-identifier staging-corp-orig \
+    --new-db-cluster-identifier staging-corp \
+    --port 3306 \
+    --apply-immediately  > /dev/null 
+
+
+aws rds modify-db-instance \
+    --db-instance-identifier staging-corp-instance-1-orig \
+    --new-db-instance-identifier staging-corp-instance-1 \
+    --apply-immediately  > /dev/null 
+    
+
+aws rds modify-db-instance \
+    --db-instance-identifier  staging-corp-instance-1-us-east-1b-orig \
+    --new-db-instance-identifier staging-corp-instance-1-us-east-1b \
+    --apply-immediately  > /dev/null 
+
+
+
+
+
+  SET PRODUCTION CLUSTER PORT TO 3306
+
+
+aws rds modify-db-cluster \
+    --db-cluster-identifier production-cluster-1 \
+     --port 3306 \
+     --apply-immediately  > /dev/null 
