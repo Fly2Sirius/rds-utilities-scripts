@@ -22,7 +22,7 @@ readfile = file1.read()
 users = []
 for row in records:
     if row[0] not in readfile:
-        # print(row[0])
+        print(row[0])
         users.append(row[0])
 print(f"There are {len(users)} unknown users")
 

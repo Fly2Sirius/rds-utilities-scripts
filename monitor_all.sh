@@ -25,10 +25,13 @@ do
         echo ""
         echo $server_label
         #echo $server
-        mysql  --protocol=tcp  --host=$server -P $port -e "select ID,DB,Host,User,Command,Time,State,left(Info,$left) as Query from information_schema.processlist where Command not in ('Binlog Dump','Sleep','Connect','Daemon') and Time > 0 order by time desc limit $limit; set @count = (select count(*) as count from information_schema.processlist where Command not in ('Sleep','Daemon') and Time > 0); " 
-        if [[ $server_label == "production-services-instance-1" ]]; then
+        # mysql  --protocol=tcp  --host=$server -P $port -e "select ID,DB,Host,User,Command,Time,State,left(Info,$left) as Query from information_schema.processlist where Command not in ('Binlog Dump','Sleep','Connect','Daemon') and Time > 0 order by time desc limit $limit; set @count = (select count(*) as count from information_schema.processlist where Command not in ('Sleep','Daemon') and Time > 0); " 
+        mysql  --protocol=tcp  --host=$server -P $port -e "select ID,DB,Host,User,Command,Time,State,left(Info,$left) as Query from information_schema.processlist where Command not in ('Binlog Dump','Sleep','Connect','Daemon') and Time > 0 order by time desc limit $limit; 
+        set @runningCount = (select count(*) as runningCount from information_schema.processlist where Command not in ('Sleep','Daemon') and Time > 0);
+        set @connected = (select count(*) as connectionCount from information_schema.processlist); select @runningCount as 'Running Queries',@connected as 'Connected Users' " 
+        #if [[ $server_label == "production-services-instance-1" ]]; then
             mysql  --protocol=tcp  --host=$server -P $port -e "select user,count(1) as Count from information_schema.processlist where user not in ('financial_integration','bank_api','smb_payments_service','smb_payments_service_worker','smb_accounting_service','business_service','cashflow_enrichment','smb_invoices_service','smb_notifications','business_service_worker','kdavey','event_scheduler','rdsadmin','unauthenticated user','lendio_lake') group by user limit 10";
-        fi
+        #fi
         if [[ $server_label == "production" ]]; then
             echo -e "\e[1m\e[31m"  | tr -d '\n'
             mysql  --protocol=tcp  --host=$server -P $port -e "select id,user,count(1) as Count from information_schema.processlist where user not in ('greedo','kdavey','event_scheduler','rdsadmin','unauthenticated user','lendio_lake') group by user limit 10";

@@ -1,7 +1,7 @@
 #!/bin/bash
 start=`date +%s`
 
-e="stage"
+e="prod"
 
 if [ "$e" == "prod" ]; then
 
