@@ -1,8 +1,8 @@
-DROP EVENT IF EXISTS `optimus`.`update_bankservice_accounts_providerAccountId`;
+DROP EVENT IF EXISTS `datateam`.`update_bankservice_accounts_providerAccountId`;
 
 DELIMITER ;;
 
-CREATE EVENT `optimus`.`update_bankservice_accounts_providerAccountId` ON SCHEDULE EVERY 30 MINUTE STARTS '2023-05-04 13:00:00' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
+CREATE EVENT `datateam`.`update_bankservice_accounts_providerAccountId` ON SCHEDULE EVERY 30 MINUTE STARTS '2023-05-04 13:00:00' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
 
     call datateam.log('update bank_service accounts','start');
 
