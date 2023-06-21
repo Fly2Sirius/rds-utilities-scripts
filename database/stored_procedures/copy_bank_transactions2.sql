@@ -18,7 +18,7 @@
 --      order by cnt desc;
 
 
--- call `datateam`.`copy_bank_transactions2`(1,5,10)
+-- call `datateam`.`copy_bank_transactions2`(26903,5,1)
 
 
 DROP PROCEDURE IF EXISTS `datateam`.`copy_bank_transactions2`;
@@ -76,7 +76,7 @@ INSERT_LOOP_1:WHILE loop_id <= total_loops DO
         ,SHA2(CONCAT(REPLACE(REPLACE(t.id,"unit-",""),"finicity-",""),":",REPLACE(REPLACE(accountId,"unit-",""),"finicity-",""),":",REPLACE(REPLACE(c.id,"unit-",""),"finicity-",""),":",t.organizationId),256) as `providerHash`
         ,IF(SUBSTRING_INDEX(t.id, "-", 1) = "finicity",1,2) as `providerId`-- provider
         ,`datetime` as `transactionTimestamp`
-        ,`name`      
+        ,t.`name`      
         ,`description`
         ,`note`
         ,`category` as providerCategory
@@ -91,11 +91,14 @@ INSERT_LOOP_1:WHILE loop_id <= total_loops DO
         ,REPLACE(REPLACE(accountId,"unit-",""),"finicity-","") as `providerAccountid`
         ,t.organizationId as `businessId`
         ,REPLACE(REPLACE(c.id,"unit-",""),"finicity-","") as `providerCustomerId`
-        ,createdAt as `created`
+        ,t.createdAt as `created`
             from bank_service.transactions t
                 join bank_service.customers c on t.organizationId = c.organizationId
+                join bank_service.accounts a on t.accountId = a.id
+                join bank_service.banks b on a.bankId = b.id
                 join bank_service.orgs2Move j on t.organizationId = j.organizationId
-                where j.id between ',loop_id_start,' and ',loop_id_end,';');
+                where b.customerId = c.id
+                and j.id between ',loop_id_start,' and ',loop_id_end,';');
     PREPARE s1 FROM @sql;
     EXECUTE s1;
     -- select @sql;
