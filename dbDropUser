@@ -1,0 +1,40 @@
+#!/bin/bash
+servers=`cat $HOME/repos/utilities/config/dbServerList.txt`
+
+typeofvar () {
+
+    local type_signature=$(declare -p "$1" 2>/dev/null)
+
+    if [[ "$type_signature" =~ "declare --" ]]; then
+        printf "string"
+    elif [[ "$type_signature" =~ "declare -a" ]]; then
+        printf "array"
+    elif [[ "$type_signature" =~ "declare -A" ]]; then
+        printf "map"
+    else
+        printf "none"
+    fi
+
+}
+
+
+if [ -z ${1} ]; then
+        #echo -e "\e[1m\e[31m"
+        echo "You must enter a portion of a user to search for..."
+        exit
+fi
+
+echo "Dropping user $1"
+
+cat $HOME/repos/utilities/config/dbServerList.txt | while read i  
+    do
+        result="N"
+        user="'$1'@'10.%.%.%'"
+        result=$(mysql -h$i -se "select 'Y' from mysql.user where user = '$1'")
+        if [ "$result" == "Y" ]; then
+            echo "Dropping user $1 on $i"
+            mysql -h$i -se "drop user $user"
+        fi
+
+
+    done

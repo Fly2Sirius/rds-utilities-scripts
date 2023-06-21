@@ -1,0 +1,13 @@
+production.civpyhkigzas.us-east-1.rds.amazonaws.com
+api-sandbox-cluster.civpyhkigzas.us-east-1.rds.amazonaws.com
+api-sandbox-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+embedded-sandbox-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+preview-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+preview-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+production-tenant-adesso-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+production-tenant-adesso-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+staging-corp-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+staging-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+staging-tenant-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
+staging-tenant-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com
