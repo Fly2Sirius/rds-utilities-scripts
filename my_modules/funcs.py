@@ -20,6 +20,20 @@ def get_rds_descriptions():
     describe_response = rds.describe_db_instances()
     return describe_response
 
+def get_rds_endpoints():
+    rds = get_rds_object()
+    describe_endpoints = rds.describe_db_cluster_endpoints()
+    return describe_endpoints
+
+def get_endpoint_value_by_key(Key1, Value1):
+    instances = []
+    describe_endpoints = get_rds_endpoints()
+    for endPoint in describe_endpoints["DBClusterEndpoints"]:
+        if endPoint[Key1] == Value1:
+            instances.append(endPoint["Endpoint"])
+        pass
+    return instances
+
 def get_instance_addresses_by_tag(tagKey, tagValue):
     rds = get_rds_object()
     instances = []
@@ -33,6 +47,7 @@ def get_instance_addresses_by_tag(tagKey, tagValue):
                     if tag['Value'] == tagValue:
                         instances.append(instance["Endpoint"]["Address"])
                         pass
+
                     pass
     return instances
 
