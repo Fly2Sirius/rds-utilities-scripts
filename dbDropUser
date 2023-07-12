@@ -1,40 +1,72 @@
-#!/bin/bash
-servers=`cat $HOME/repos/utilities/config/dbServerList.txt`
+#!/usr/bin/env python3
+import boto3
+import sys
+import os
+import json
+import funcs as f
+import mysql.connector
+from mysql.connector import Error
+from mysql.connector import errorcode
+import colorama
+from colorama import Fore
+from rich.console import Console
+console = Console()
 
-typeofvar () {
+if len(sys.argv) > 1:
+    username = sys.argv[1]
+else:
+    print("You must supply a username: createUser username")
+    sys.exit()
 
-    local type_signature=$(declare -p "$1" 2>/dev/null)
+mysql_port = 3306
+mysql_user, mysql_password = f.get_mysql_credentials()
+mysql_database = "mysql"
+instance_list = f.get_endpoint_value_by_key("EndpointType","WRITER")
 
-    if [[ "$type_signature" =~ "declare --" ]]; then
-        printf "string"
-    elif [[ "$type_signature" =~ "declare -a" ]]; then
-        printf "array"
-    elif [[ "$type_signature" =~ "declare -A" ]]; then
-        printf "map"
-    else
-        printf "none"
-    fi
+def dropUser(connection,user):
+    print(Fore.BLUE
+        + f"Dropping user -> {user}"
+        + Fore.RESET)
+    drop_query = f"drop user {user}"
+    print(drop_query)
 
-}
+for mysql_host in instance_list:
+    connection = None
+    if mysql_host.startswith("sandbox-"):
+        print (Fore.YELLOW
+        + f"Skipping sandbox server -> {mysql_host}"
+        + Fore.RESET)
+    else:
+        try:
+            connection = f.create_connection(
+                mysql_host, mysql_user, mysql_password, mysql_port, mysql_database
+            )
 
+        except mysql.connector.Error as err:
+            pass
+            #print(err)
+        else:
+            if connection:
+                print(
+                    Fore.GREEN
+                    + f"CONNECTED : {mysql_host}"
+                    + Fore.RESET
+                )
+                print(
+                    Fore.GREEN
+                    + f"Getting hosts for  : {username}"
+                    + Fore.RESET
+                )
+                user_list = f.getUsersAndHosts(connection,username)
+                if user_list:
+                    for user in user_list:
+                        dropUser(connection,user)
+                else:
+                    print(f"No users for {username} on this server")   
 
-if [ -z ${1} ]; then
-        #echo -e "\e[1m\e[31m"
-        echo "You must enter a portion of a user to search for..."
-        exit
-fi
-
-echo "Dropping user $1"
-
-cat $HOME/repos/utilities/config/dbServerList.txt | while read i  
-    do
-        result="N"
-        user="'$1'@'10.%.%.%'"
-        result=$(mysql -h$i -se "select 'Y' from mysql.user where user = '$1'")
-        if [ "$result" == "Y" ]; then
-            echo "Dropping user $1 on $i"
-            mysql -h$i -se "drop user $user"
-        fi
-
-
-    done
+                connection.close()
+            else:
+                pass
+                # print(Fore.YELLOW
+                #     + f"UNABLE TO CONNECT TO : {mysql_host}"
+                #     + Fore.RESET)
