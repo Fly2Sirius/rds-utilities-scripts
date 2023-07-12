@@ -9,4 +9,4 @@ if [ -z ${1} ]; then
         echo "You must enter a portion of a user to search for..."
 fi
 
-mysql  --protocol=tcp  --host=$server -P $port -e "select user,host,plugin from mysql.user where user like '%"$1"%'"
+mysql  --protocol=tcp  --host=$server -P $port -e "select CONCAT('\'',user,'\'@\'',host,'\'') as user ,plugin from mysql.user where user like '%"$1"%'"
