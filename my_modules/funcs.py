@@ -74,9 +74,34 @@ def create_connection(host_name, user_name, user_password, mysql_port, mysql_dat
             database=mysql_database,
         )
         #print(f"Connection to {host_name} successful")
-    except Error as e:
-        print(f"The error '{e}' occurred")
-        sys.exit()
+    except mysql.connector.Error as err:
+        if err.errno == 2003:
+            print(
+                Fore.YELLOW
+                + f"Unable to connect to host: {host_name}" 
+                + Fore.RESET
+            )
+        elif err.errno == 1045:
+            print(
+                Fore.RED
+                + f"Username or Password Issue: {host_name}"
+                + Fore.RESET
+            )
+        elif err.errno == 1049:
+            print(                
+                Fore.YELLOW
+                + f"Database `{mysql_database}` does not exist on {host_name}"
+                + Fore.RESET
+            )
+        else:
+            print(err)
+        pass  
+          
+    
+    # except Error as e:
+    #     print(f"The error '{e}' occurred")
+    #     continue
+    #     #sys.exit()
 
     return connection
 
@@ -269,3 +294,24 @@ def run_mysql_command(connection, command):
         cursor.execute(command)
     except Error as e:
         print(f"The error '{e}' occurred")
+
+def getUsersAndHosts(connection,user):
+    user_list = []
+    cursor = connection.cursor( buffered=True , dictionary=True)
+    query = f"select host from mysql.user where user = '{user}'"
+    try:
+        cursor.execute(query)
+    except mysql.connector.ProgrammingError as err:
+        print(
+            Fore.RED
+            + f"An error occured getting hosts -> {err.msg}"
+            + Fore.RESET
+        )
+        host_list = 0
+    except mysql.connector.Error as err:
+        print(err)
+    host_list = cursor.fetchall()
+    for row in host_list:
+        user_list.append(f"'{user}'@'{row['host']}'")
+    
+    return user_list
