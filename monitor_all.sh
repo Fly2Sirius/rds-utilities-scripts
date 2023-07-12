@@ -1,5 +1,7 @@
 #!/bin/bash
 server_list=('production.civpyhkigzas.us-east-1.rds.amazonaws.com' 'reader-bi.civpyhkigzas.us-east-1.rds.amazonaws.com' 'reader-primary.civpyhkigzas.us-east-1.rds.amazonaws.com' 'production-services-instance-1.civpyhkigzas.us-east-1.rds.amazonaws.com')
+#server_list=('production.civpyhkigzas.us-east-1.rds.amazonaws.com' )
+
 port=3306
 limit=300
 count=1
