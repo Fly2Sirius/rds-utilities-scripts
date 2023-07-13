@@ -24,11 +24,8 @@ mysql_database = "mysql"
 instance_list = f.get_endpoint_value_by_key("EndpointType","WRITER")
 
 def dropUser(connection,user):
-    print(Fore.BLUE
-        + f"Dropping user -> {user}"
-        + Fore.RESET)
     drop_query = f"drop user {user}"
-    print(drop_query)
+    #print(drop_query)
 
 for mysql_host in instance_list:
     connection = None
@@ -38,6 +35,11 @@ for mysql_host in instance_list:
         + Fore.RESET)
     else:
         try:
+            print(
+                Fore.GREEN
+                + f"Connecting to : {mysql_host}", end=""
+                + Fore.RESET
+            )
             connection = f.create_connection(
                 mysql_host, mysql_user, mysql_password, mysql_port, mysql_database
             )
@@ -45,24 +47,27 @@ for mysql_host in instance_list:
         except mysql.connector.Error as err:
             pass
             #print(err)
-        else:
+        else: 
             if connection:
                 print(
                     Fore.GREEN
-                    + f"CONNECTED : {mysql_host}"
+                    + f"\rCONNECTED : {mysql_host}"
                     + Fore.RESET
                 )
                 print(
                     Fore.GREEN
-                    + f"Getting hosts for  : {username}"
+                    + f"Getting host info...", end=""
                     + Fore.RESET
                 )
                 user_list = f.getUsersAndHosts(connection,username)
                 if user_list:
                     for user in user_list:
+                        print(Fore.BLUE
+                            + f"\rDropping user -> {user}"
+                            + Fore.RESET)
                         dropUser(connection,user)
                 else:
-                    print(f"No users for {username} on this server")   
+                    print(f"\rNo users for {username} on this server")   
 
                 connection.close()
             else:
