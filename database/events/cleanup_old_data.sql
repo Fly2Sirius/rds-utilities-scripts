@@ -7,5 +7,9 @@ BEGIN
     CALL datateam.clear_data_syncronizations(10);
     CALL datateam.clear_event_webhooks(10);
     CALL datateam.clear_jobs(10);
+    CALL datateam.clear_bank_service_event_stream();
+    CALL datateam.clear_business_service_event_stream();
+    CALL datateam.clear_embedded_service_event_stream();
+    CALL datateam.`clear_smb-payments-service_event_stream`();
 END;;
 DELIMITER ;
