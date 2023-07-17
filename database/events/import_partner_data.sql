@@ -15,7 +15,7 @@ LOAD DATA FROM S3  'S3://lendio-snowflake-exports/deals/partner-affiliate-deals.
         OPTIONALLY ENCLOSED BY '"'
         LINES TERMINATED BY '\n'
         IGNORE 1 LINES
-        (@dummy,`marketingId`,`ownershipStart`,`ownershipEnd`,`borrowerid`,`dealId`,`dealCreatedAt`,`dealType`,`productType`,`term`,`dealSentAt`,`docPrepAt`,`offerReceivedAt`,`offerReceivedCount`, `offerAcceptedAt`,`dealClosedAt`,`fundedAmount`,`commissionAmount`,`payoutAmount`,`activityCount`,`salesRep`,`parentDealId`)
+        (@dummy,`marketingId`,`ownershipStart`,`ownershipEnd`,`borrowerid`,`dealId`,`dealCreatedAt`,`dealStatus`,`dealStage`,`dealType`,`productType`,`term`,`dealSentAt`,`docPrepAt`,`offerReceivedAt`,`offerReceivedCount`, `offerAcceptedAt`,`dealClosedAt`,`fundedAmount`,`commissionAmount`,`payoutAmount`,`activityCount`,`salesRep`,`parentDealId`)
         
 call datateam.log(NULL,'end');
 
