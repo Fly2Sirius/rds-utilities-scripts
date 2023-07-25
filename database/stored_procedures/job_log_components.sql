@@ -3,7 +3,7 @@
 -- These tables store info about jobs run through stored procs especially for looping jobs.
 --
 -- job_log -- table sets logging for the overall job, specifically full start and end times, the number of steps (looping queries) the job has and the progress of the job overall.
--- 			  If you are trying to track start and end times on a simple job with now loops, just set the steps to 0
+--            If you are trying to track start and end times on a simple job with now loops, just set the steps to 0
 --
 -- job_log_steps -- table contains the logging for each looping step within a job, loops complete, total loops, etc.
 --
@@ -60,25 +60,25 @@ CREATE TABLE IF NOT EXISTS `datateam`.`job_log_steps` (
 
 CREATE OR REPLACE VIEW `datateam`.`job_log_time_estimates` as
 SELECT
-	`l`.`job_name` AS `Job Name`,
-	`s`.`step_name` AS `Step Name`,
-	`s`.`loops_total` AS `Total Loops`,
-	`s`.`loops_complete` AS `Current Loop`,
-	concat(round(((`s`.`loops_complete` / `s`.`loops_total`) * 100), 1), '%') AS `Percent Complete (Loops)`,
-	`s`.`increment` AS `increment`,
-	`s`.`start` AS `Step Start`,
-	`s`.`end` AS `Step End`,
-	`s`.`total_rows_to_update` as `Total Number Of Rows To Update`,
-	`s`.`rows_updated` as `Number Of Rows Updated`,
-	concat(round(((`s`.`rows_updated` / `s`.`total_rows_to_update`) * 100), 1), '%') AS `Percent Complete (Rows)`,
-	timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) AS `Run Time (Min)`,
-	round((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / 60), 2) AS `Run Time (hr)`,
-	round(((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)), 0) AS `Est Time Remaining`,
-	(timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) + round(((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)), 0)) AS `Estimated Total Run Time`,
-	if((round(((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)), 0) > 0), (now() + interval round((((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)) * 2.25), 0)
+    `l`.`job_name` AS `Job Name`,
+    `s`.`step_name` AS `Step Name`,
+    `s`.`loops_total` AS `Total Loops`,
+    `s`.`loops_complete` AS `Current Loop`,
+    concat(round(((`s`.`loops_complete` / `s`.`loops_total`) * 100), 1), '%') AS `Percent Complete (Loops)`,
+    `s`.`increment` AS `increment`,
+    `s`.`start` AS `Step Start`,
+    `s`.`end` AS `Step End`,
+    `s`.`total_rows_to_update` as `Total Number Of Rows To Update`,
+    `s`.`rows_updated` as `Number Of Rows Updated`,
+    concat(round(((`s`.`rows_updated` / `s`.`total_rows_to_update`) * 100), 1), '%') AS `Percent Complete (Rows)`,
+    timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) AS `Run Time (Min)`,
+    round((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / 60), 2) AS `Run Time (hr)`,
+    round(((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)), 0) AS `Est Time Remaining`,
+    (timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) + round(((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)), 0)) AS `Estimated Total Run Time`,
+    if((round(((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)), 0) > 0), (now() + interval round((((timestampdiff(MINUTE, `s`.`start`, ifnull(`s`.`end`, now())) / `s`.`loops_complete`) * (`s`.`loops_total` - `s`.`loops_complete`)) * 2.25), 0)
 minute), NULL) AS `Estimated Completion Time`
-	FROM (`datateam`.`job_log_steps` `s`
-	JOIN `datateam`.`job_log` `l` ON ((`s`.`job_id` = `l`.`id`)));
+    FROM (`datateam`.`job_log_steps` `s`
+    JOIN `datateam`.`job_log` `l` ON ((`s`.`job_id` = `l`.`id`)));
 
 
 DROP PROCEDURE IF EXISTS `datateam`.`job_log_start`;
@@ -98,12 +98,12 @@ DROP PROCEDURE IF EXISTS `datateam`.`job_log_update`;
 DELIMITER ;;
 CREATE PROCEDURE `datateam`.`job_log_update`(inColumn varchar(30),inColumnValue varchar(30))
 proc_Exit:BEGIN
-	SET @update_sql = CONCAT('update `datateam`.`job_log` 
-		set ',inColumn,' = "',inColumnValue,'"
-		where id = ',@_log_id,';');
-	-- select @update_sql;
-	PREPARE s1 FROM @update_sql;
-	EXECUTE s1;  
+    SET @update_sql = CONCAT('update `datateam`.`job_log` 
+        set ',inColumn,' = "',inColumnValue,'"
+        where id = ',@_log_id,';');
+    -- select @update_sql;
+    PREPARE s1 FROM @update_sql;
+    EXECUTE s1;  
 END;;
 DELIMITER ;
 
@@ -112,14 +112,14 @@ DROP PROCEDURE IF EXISTS `datateam`.`job_log_steps_start`;
 DELIMITER ;;
 CREATE PROCEDURE `datateam`.`job_log_steps_start`(inJobId int unsigned, inStepNumber int unsigned,inStepName varchar(30),inRowsToUpdate int unsigned,inIncrement int, inStartId int,inMaxId int,inStatus varchar(50), OUT _log_step_id int unsigned)
 proc_Exit:BEGIN
-	DECLARE loops_total int;
-	SET loops_total = ((inMaxId - inStartId)/inIncrement) + 1;
-	SET @insert_sql = CONCAT('insert into `datateam`.`job_log_steps` (id,job_id,step_number,step_name,rows_to_update,increment,loops_total,`status`) VALUES (NULL,',inJobId,',',inStepNumber,',"',inStepName,'",',inRowsToUpdate,',',inIncrement,',',loops_total,',"',inStatus,'");');
-	-- select @insert_sql;
-	PREPARE s1 FROM @insert_sql;
-	EXECUTE s1;  
-	SET `_log_step_id` := LAST_INSERT_ID();
-	
+    DECLARE loops_total int;
+    SET loops_total = IFNULL(((inMaxId - inStartId)/inIncrement) + 1,0);
+    SET @insert_sql = CONCAT('insert into `datateam`.`job_log_steps` (id,job_id,step_number,step_name,rows_to_update,increment,loops_total,`status`) VALUES (NULL,',inJobId,',',inStepNumber,',"',inStepName,'",',inRowsToUpdate,',',inIncrement,',',loops_total,',"',inStatus,'");');
+    -- select @insert_sql;
+    PREPARE s1 FROM @insert_sql;
+    EXECUTE s1;  
+    SET `_log_step_id` := LAST_INSERT_ID();
+    
 END;;
 DELIMITER ;
 
@@ -128,10 +128,10 @@ DROP PROCEDURE IF EXISTS `datateam`.`job_log_steps_update`;
 DELIMITER ;;
 CREATE PROCEDURE `datateam`.`job_log_steps_update`(inColumn varchar(30),inColumnValue varchar(30))
 proc_Exit:BEGIN
-	SET @update_sql = CONCAT('update `datateam`.`job_log_steps` 
-		set ',inColumn,' = "',inColumnValue,'"
-		where id = ',@_log_step_id,';');
-	PREPARE s1 FROM @update_sql;
-	EXECUTE s1;  
+    SET @update_sql = CONCAT('update `datateam`.`job_log_steps` 
+        set ',inColumn,' = "',inColumnValue,'"
+        where id = ',@_log_step_id,';');
+    PREPARE s1 FROM @update_sql;
+    EXECUTE s1;  
 END;;
 DELIMITER ;
