@@ -53,7 +53,10 @@ do
         group by b.trx_mysql_thread_id 
         having count(1) > 3
         order by count(1) desc; select substring_index(host, ':', 1) as IP , count(*) from information_schema.processlist group by substring_index(host, ':', 1);" 
-    
+        mysql  --protocol=tcp  --host=$server -P $port -e "select * from datateam.job_log where job_name = 'import_partner_data' and end is NULL and start < date_add(now(), interval -5 minute)" ;
+
+
+
         fi
 
         #Show logins from IP Addresses

@@ -6,7 +6,7 @@ CREATE EVENT `datateam`.`export_assignments` ON SCHEDULE EVERY 5 MINUTE STARTS '
 
 SET @timestamp = (select unix_timestamp(CURRENT_TIMESTAMP));
 
-call datateam.log('export_assignments','start');
+call `datateam`.`job_log_start`("export_assignments",1,0,0,0,"Starting",@_log_id);
 
 SELECT CONCAT('
 SELECT id as borrower_id FROM optimus.borrowers where userId = 10282184
@@ -36,6 +36,9 @@ PREPARE stmt from @sql2;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
-call datateam.log(NULL,'end');
+call `datateam`.`job_log_update`("errors",@@error_count);
+call `datateam`.`job_log_update`("status","Complete");
+call `datateam`.`job_log_update`("end",CURRENT_TIMESTAMP);
+
 END;;
 DELIMITER ;

@@ -4,7 +4,7 @@ DELIMITER ;;
 
 CREATE EVENT `datateam`.`export_borrowerMatchesSplit` ON SCHEDULE EVERY 10 MINUTE STARTS '2023-02-03 11:00:00' ON COMPLETION PRESERVE ENABLE COMMENT 'Dumps 3 borrowerMatches tables to S3' DO BEGIN
 
-call datateam.log('export_borrowerValuesSplit','start');
+call `datateam`.`job_log_start`("export_borrowerValuesSplit",1,0,0,0,"Starting",@_log_id);
     
 SET @timestamp = (select unix_timestamp(CURRENT_TIMESTAMP));
 
@@ -108,6 +108,9 @@ DEALLOCATE PREPARE stmt;
 
 DROP temporary table datateam._borrowerMatchIds;
 
-call datateam.log(NULL,'end');
+call `datateam`.`job_log_update`("errors",@@error_count);
+call `datateam`.`job_log_update`("status","Complete");
+call `datateam`.`job_log_update`("end",CURRENT_TIMESTAMP);
+
 END;;
 DELIMITER ;
