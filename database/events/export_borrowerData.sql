@@ -23,7 +23,7 @@ select id
 from optimus.borrowers
 where isTest = 0
 and modified > NOW() - INTERVAL 6 MINUTE
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowers_',@timestamp,'"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowers/borrowers_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
     OVERWRITE ON;') into @sql;
@@ -41,7 +41,7 @@ from optimus.doNotContactEmails t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/doNotContactEmails_',@timestamp,'"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/donotcontactemails/doNotContactEmails_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
     OVERWRITE ON;') into @sql;
@@ -59,7 +59,7 @@ from optimus.doNotContactPhones t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/doNotContactPhones_',@timestamp,'"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/donotcontactphones/doNotContactPhones_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
     OVERWRITE ON;') into @sql;
@@ -80,7 +80,7 @@ from optimus.borrowerApplications t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowerApplications_',@timestamp,'"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowerapplications/borrowerApplications_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
     OVERWRITE ON;') into @sql;
@@ -99,7 +99,7 @@ from optimus.borrowerValues t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowerValues_',@timestamp,'"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowervalues/borrowerValues_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
     OVERWRITE ON;') into @sql;
