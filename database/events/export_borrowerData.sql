@@ -4,9 +4,11 @@ DELIMITER ;;
 
 CREATE EVENT `datateam`.`export_borrower_data` ON SCHEDULE EVERY 5 MINUTE STARTS '2023-09-21 01:00:00' ON COMPLETION PRESERVE ENABLE COMMENT 'Dumps 5 borrower related tables every 5 minutes to S3' DO BEGIN
 
+SET @timestamp = (select unix_timestamp(CURRENT_TIMESTAMP));
 SET @job_steps = 0;
 call `datateam`.`job_log_start`("Export Borrower Data",@job_steps,1,0,0,"Starting Job",@_log_id);
 
+SELECT CONCAT('
 select id
 , name
 , userid
@@ -21,12 +23,16 @@ select id
 from optimus.borrowers
 where isTest = 0
 and modified > NOW() - INTERVAL 6 MINUTE
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowers"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowers_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
-    OVERWRITE ON;
+    OVERWRITE ON;') into @sql;
 
+PREPARE stmt from @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
+SELECT CONCAT('
 select t.borrowerid
 , t.created
 , t.modified
@@ -35,11 +41,16 @@ from optimus.doNotContactEmails t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/doNotContactEmails"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/doNotContactEmails_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
-    OVERWRITE ON;
+    OVERWRITE ON;') into @sql;
 
+PREPARE stmt from @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SELECT CONCAT('
 select t.borrowerid
 , t.created
 , t.modified
@@ -48,12 +59,16 @@ from optimus.doNotContactPhones t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/doNotContactPhones"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/doNotContactPhones_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
-    OVERWRITE ON;
+    OVERWRITE ON;') into @sql;
 
+PREPARE stmt from @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
+SELECT CONCAT('
 select t.borrowerid
 , t.type
 , t.started
@@ -65,12 +80,16 @@ from optimus.borrowerApplications t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowerApplications"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowerApplications_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
-    OVERWRITE ON;
+    OVERWRITE ON;') into @sql;
 
+PREPARE stmt from @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
+SELECT CONCAT('
 select t.borrowerid
 , t.attributeid
 , t.value
@@ -80,10 +99,14 @@ from optimus.borrowerValues t
 join optimus.borrowers b on t.borrowerId = b.id
 where t.modified > NOW() - INTERVAL 6 MINUTE
 and b.isTest = 0
-INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowerValues"  
+INTO OUTFILE S3 "s3-us-east-1://lendio-snowflake-exports/borrower_data/borrowerValues_',@timestamp,'"  
     FIELDS TERMINATED BY "\\t" 
     LINES TERMINATED BY "\\n"
-    OVERWRITE ON;
+    OVERWRITE ON;') into @sql;
+
+PREPARE stmt from @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 
 call `datateam`.`job_log_update`("errors",@@error_count);
