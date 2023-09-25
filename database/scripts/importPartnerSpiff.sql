@@ -1,4 +1,3 @@
-
 SET @job_steps = 0;
 call `datateam`.`job_log_start`("Import Partner Spiff Data",@job_steps,1,0,0,"Starting Job",@_log_id);
 truncate table optimus.partnerCommissions;
@@ -11,8 +10,10 @@ LINES TERMINATED BY '\n'
 ignore 1 lines
 (processingId,id,recordType,userName,payoutAmount,statementPeriodStartDate,revenue,payoutRuleName,planName,userExternalId,borrowerId, `name`,currentBorrowerStatus,stage,mineralGroup,phone,street,street2,city,`state`,zip,dateClosed,fundedAmount,acceptedOfferId, `type`,loanProductCategoryType,loanProductLenderId,points,housePoints,buyRate,paymentFrequency,paymentAmount,factor,term,numPayments,interestRate,offerReceivedAt,offerAcceptedAt,opportunityId,oppStart,oppEnd,disposition,appCompletedAt,appSent,docPrep,marketingId);
 
+call `datateam`.`job_log_update`("errors",@@error_count);
 call `datateam`.`job_log_update`("status","Complete");
 call `datateam`.`job_log_update`("end",CURRENT_TIMESTAMP);
 
-
 # 15 * * * *  ec2-user /home/ec2-user/partnerSpiff/importPartnerSpiff.sh
+# mysql --defaults-extra-file=/home/ec2-user/.my.cnf -hproduction-cluster-1.cluster-civpyhkigzas.us-east-1.rds.amazonaws.com optimus < /home/ec2-user/partnerSpiff/importPartnerSpiff.sql
+
